@@ -1,9 +1,9 @@
 package util;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,6 +67,26 @@ public class HttpManager {
             conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
             conn.setRequestProperty("Accept-Charset", "UTF-8");
             conn.addRequestProperty("User-Agent", agentHeaderValue.context);
+
+            if (postFlag) {
+                String urlParams = new String(urlParameters.getBytes(),
+                        Charset.forName("UTF-8"));
+                conn.setRequestProperty("Content-Length",
+                        "" + Integer.toString(urlParams.getBytes().length));
+
+                conn.setUseCaches(false);
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                // Send request
+                DataOutputStream wr = new DataOutputStream(
+                        conn.getOutputStream());
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(wr, "UTF-8"));
+                writer.write(urlParams);
+                writer.flush();
+                writer.close();
+            }
 
             boolean redirect = false;
 
