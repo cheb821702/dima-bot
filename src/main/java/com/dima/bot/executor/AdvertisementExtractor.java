@@ -28,24 +28,32 @@ public class AdvertisementExtractor {
 
             // need http protocol
             doc = Jsoup.connect(url).get();
-
+            String text = doc.outerHtml();
             // get page title
             String title = doc.title();
             System.out.println("title : " + title);
 
             // get all links
             Element body = doc.body();
-            for(Element form : body.getElementsByTag("form")) {
-                if(form.hasAttr("method") && "post".equals(form.attr("method"))) {
-                    for(Element table : form.getElementsByTag("table")) {
-                        for(Element tbody : table.getElementsByTag("tbody")) {
-                            for(Element tr : tbody.getElementsByTag("tr")) {
-                                if(tr.hasAttr("bgcolor")) {
+            for(Element bodyChild : body.children()) {
+                if("form".equals(bodyChild.tagName()) && bodyChild.hasAttr("method") && "post".equals(bodyChild.attr("method"))) {
+                    for(Element formChild : bodyChild.children()) {
+                        if("table".equals(formChild.tagName()))
+                        for(Element tableChild : formChild.children()) {
+                            if("tbody".equals(tableChild.tagName())) {
+                                int num = 0;
+                                for(Element tbodyChild : tableChild.children()) {
+                                    if("tr".equals(tbodyChild.tagName())) {
+                                        if(0 < num && num < 21) {
 
+                                        }
+                                       num++;
+                                    }
                                 }
                             }
                         }
                     }
+                    break;
                 }
             }
 

@@ -1,5 +1,6 @@
 package com.dima.bot;
 
+import com.dima.bot.executor.AdvertisementExtractor;
 import com.dima.bot.executor.BotsManager;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.XMLKeeper;
@@ -22,6 +23,9 @@ public class Main {
         HttpManager httpManager = new HttpManager();
 
         String page = httpManager.doGet(url);
+
+        AdvertisementExtractor extractor = new AdvertisementExtractor();
+        extractor.extract();
 
         try {
             SettingsKeeper keeper = new XMLKeeper();
