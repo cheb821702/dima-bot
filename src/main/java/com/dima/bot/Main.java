@@ -2,6 +2,8 @@ package com.dima.bot;
 
 import com.dima.bot.executor.AdvertisementExtractor;
 import com.dima.bot.executor.BotsManager;
+import com.dima.bot.executor.FerioAdvertisementExtractor;
+import com.dima.bot.executor.model.Advertisement;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.XMLKeeper;
 import com.dima.bot.settings.model.UrlWorker;
@@ -20,12 +22,8 @@ public class Main {
 
         String url = "http://www.ferio.ru/clad/?ch=orders&st=ok&agent=53983&cp=901726&brand=2&criterion=&day=&month=&year=&keywrd=&list=1";
 
-        HttpManager httpManager = new HttpManager();
-
-        String page = httpManager.doGet(url);
-
-        AdvertisementExtractor extractor = new AdvertisementExtractor();
-        extractor.extract();
+        AdvertisementExtractor extractor = new FerioAdvertisementExtractor();
+        List<Advertisement> advertisements =  extractor.extract(url);
 
         try {
             SettingsKeeper keeper = new XMLKeeper();

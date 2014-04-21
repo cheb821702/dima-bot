@@ -1,6 +1,7 @@
 package com.dima.bot.settings;
 
 import com.dima.bot.settings.model.UrlWorker;
+import com.dima.bot.util.URLCheckUtil;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -536,45 +537,11 @@ public class XMLKeeper implements SettingsKeeper {
             if(url != null) {
                 String urlRegEx = "http://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
                 if(url.matches(urlRegEx)) {
-                    StringBuilder urlBuilder = new StringBuilder();
-                    urlBuilder.append(url.substring(0,url.indexOf('?')+1));
-                    Pattern pattern = Pattern.compile("ch=[^&]*&?");
-                    Matcher m = pattern.matcher(url);
-                    if(!m.find()) {
-                        return false;
-                    } else {
-                        urlBuilder.append(m.group(0));
+                    String checkedUrl = URLCheckUtil.checkUrl(url);
+                    if(checkedUrl!=null) {
+                        worker.setUrl(url);
+                        return true;
                     }
-                    pattern = Pattern.compile("st=[^&]*&?");
-                    m = pattern.matcher(url);
-                    if(!m.find()) {
-                        return false;
-                    } else {
-                        urlBuilder.append(m.group(0));
-                    }
-                    pattern = Pattern.compile("agent=[^&]*&?");
-                    m = pattern.matcher(url);
-                    if(!m.find()) {
-                        return false;
-                    } else {
-                        urlBuilder.append(m.group(0));
-                    }
-                    pattern = Pattern.compile("cp=[^&]*&?");
-                    m = pattern.matcher(url);
-                    if(!m.find()) {
-                        return false;
-                    } else {
-                        urlBuilder.append(m.group(0));
-                    }
-                    pattern = Pattern.compile("brand=[^&]*");
-                    m = pattern.matcher(url);
-                    if(!m.find()) {
-                        return false;
-                    } else {
-                        urlBuilder.append(m.group(0));
-                    }
-                    worker.setUrl(urlBuilder.toString());
-                    return true;
                 } else {
                     logger.debug("Incorrect URL " + worker.getUrl());
                 }
