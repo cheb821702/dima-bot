@@ -2,8 +2,10 @@ package com.dima.bot;
 
 import com.dima.bot.executor.AdvertisementExtractor;
 import com.dima.bot.executor.BotsManager;
+import com.dima.bot.executor.ExcelAutoFillUtil;
 import com.dima.bot.executor.FerioAdvertisementExtractor;
 import com.dima.bot.executor.model.Advertisement;
+import com.dima.bot.executor.model.AutoFillEntity;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.XMLKeeper;
 import com.dima.bot.settings.model.UrlWorker;

@@ -1,19 +1,16 @@
 package com.dima.bot.ui;
 
 import com.dima.bot.executor.BotsManager;
-import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
 
 
 /**
@@ -26,22 +23,18 @@ public class ConfigurationPage extends JFrame {
     private TrayIcon trayIcon;
     private SystemTray tray;
     private BotsManager manager;
-    private SettingsKeeper keeper;
-    public ConfigurationPage(BotsManager manager){
+    public ConfigurationPage(BotsManager initManager){
         super("Staff Worker");
 
-        this.manager = manager;
-        if(this.manager != null) {
-            keeper = manager.getKeeper();
-        }
+        this.manager = initManager;
 
         initTray();
 
         JPanel actPane = new JPanel();
         actPane.setLayout(new FlowLayout());
         final JLabel chooseACTFileLabel = new JLabel();
-        if(keeper != null) {
-            String actPath = keeper.getAutoCompleteTemplatesPath();
+        if(manager != null) {
+            String actPath = manager.getAutoCompleteTemplatesPath();
             if(actPath != null) {
                 chooseACTFileLabel.setText(actPath);
             } else {
@@ -86,7 +79,7 @@ public class ConfigurationPage extends JFrame {
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
-                    String actPath = keeper.setAutoCompleteTemplatesPath(file.getPath());
+                    String actPath = manager.setAutoCompleteTemplatesPath(file.getPath());
                     if(actPath != null) {
                         chooseACTFileLabel.setText(actPath);
                     } else {
@@ -107,8 +100,8 @@ public class ConfigurationPage extends JFrame {
 
             @Override
             public int getRowCount() {
-                if(keeper != null) {
-                    return keeper.getUrlWorkers().size();
+                if(manager != null) {
+                    return manager.getUrlWorkers().size();
                 }
                 return 0;
             }
@@ -120,8 +113,8 @@ public class ConfigurationPage extends JFrame {
 
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if(keeper != null && columnIndex>=0 && columnIndex<=4) {
-                    List<UrlWorker> workers = keeper.getUrlWorkers();
+                if(manager != null && columnIndex>=0 && columnIndex<=4) {
+                    List<UrlWorker> workers = manager.getUrlWorkers();
                     if(rowIndex < workers.size()) {
                         UrlWorker worker = workers.get(rowIndex);
                         if(columnIndex == 0) return worker.getUrl();
@@ -160,9 +153,9 @@ public class ConfigurationPage extends JFrame {
                         UrlWorker dialogWorker = getDialogWorker();
                         if(dialogWorker != null) {
                             if(dialogWorker.isSeniorStatus()) {
-                                keeper.addSeniorUrlWorker(dialogWorker);
+                                manager.addSeniorUrlWorker(dialogWorker);
                             } else {
-                                keeper.addVassalUrlWorker(dialogWorker);
+                                manager.addVassalUrlWorker(dialogWorker);
                             }
                             table.repaint();
                         }
@@ -177,7 +170,7 @@ public class ConfigurationPage extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int rowIndex = table.getSelectedRow();
-                if(keeper != null && rowIndex>=0) {
+                if(manager != null && rowIndex>=0) {
                     UrlWorker removedWorker = new UrlWorker();
                     removedWorker.setUrl((String) table.getModel().getValueAt(rowIndex,0));
                     String cost = (String) table.getModel().getValueAt(rowIndex, 1);
@@ -193,7 +186,7 @@ public class ConfigurationPage extends JFrame {
                     } else {
                         removedWorker.setSeniorStatus(false);
                     }
-                    keeper.removeUrlWorker(removedWorker);
+                    manager.removeUrlWorker(removedWorker);
                     table.repaint();
                 }
             }
@@ -204,7 +197,7 @@ public class ConfigurationPage extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int rowIndex = table.getSelectedRow();
-                if(keeper != null && rowIndex>=0) {
+                if(manager != null && rowIndex>=0) {
                     final UrlWorker editedWorker = new UrlWorker();
                     editedWorker.setUrl((String) table.getModel().getValueAt(rowIndex,0));
                     String cost = (String) table.getModel().getValueAt(rowIndex, 1);
@@ -225,11 +218,11 @@ public class ConfigurationPage extends JFrame {
                         public void processDialogOK() {
                             UrlWorker dialogWorker = getDialogWorker();
                             if(dialogWorker != null) {
-                                keeper.removeUrlWorker(editedWorker);
+                                manager.removeUrlWorker(editedWorker);
                                 if(dialogWorker.isSeniorStatus()) {
-                                    keeper.addSeniorUrlWorker(dialogWorker);
+                                    manager.addSeniorUrlWorker(dialogWorker);
                                 } else {
-                                    keeper.addVassalUrlWorker(dialogWorker);
+                                    manager.addVassalUrlWorker(dialogWorker);
                                 }
                                 table.repaint();
                             }
