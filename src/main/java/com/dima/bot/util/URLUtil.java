@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * Time: 3:02 PM
  * To change this template use File | Settings | File Templates.
  */
-public class URLCheckUtil {
+public class URLUtil {
 
     public static String checkUrl(String url) {
         if(url != null) {

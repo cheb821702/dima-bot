@@ -3,9 +3,12 @@ package com.dima.bot.executor;
 import com.dima.bot.executor.model.AutoFillEntity;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
+import com.dima.bot.util.URLUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * User: CHEB
@@ -15,14 +18,44 @@ public class BotsManager implements SettingsKeeper{
     private SettingsKeeper keeper;
     private List<AutoFillEntity> autoFillEntities;
 
+    private boolean processingAutofillingEnable = true;
+
     public BotsManager(SettingsKeeper keeper) {
         this.keeper = keeper;
         ExcelAutoFillUtil autoFillUtil = new ExcelAutoFillUtil();
         this.autoFillEntities = autoFillUtil.getEntities(getAutoCompleteTemplatesPath());
+
+
+    }
+
+    public void startAutoFillDetector() {
+        if(processingAutofillingEnable) {
+            processingAutofillingEnable = false;
+            AutoFillDetector detector = new AutoFillDetector(this);
+            ExecutorService autofillEx = Executors.newFixedThreadPool(1);
+            autofillEx.execute(detector);
+        }
+    }
+
+    public void finishAutoFillDetector() {
+        processingAutofillingEnable = true;
     }
 
     public SettingsKeeper getKeeper() {
         return keeper;
+    }
+
+    public List<AutoFillEntity> getAutoFillEntities() {
+        return autoFillEntities;
+    }
+
+    public AdvertisementExtractor factoryAdvertisementExtractor(String url) {
+        if(url != null) {
+            if(url.startsWith(FerioAdvertisementExtractor.SITE_URL)) {
+                return new FerioAdvertisementExtractor();
+            }
+        }
+        return null;
     }
 
     @Override

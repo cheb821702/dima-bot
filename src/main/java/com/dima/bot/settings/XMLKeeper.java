@@ -1,7 +1,7 @@
 package com.dima.bot.settings;
 
 import com.dima.bot.settings.model.UrlWorker;
-import com.dima.bot.util.URLCheckUtil;
+import com.dima.bot.util.URLUtil;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * User: CHEB
@@ -537,7 +535,7 @@ public class XMLKeeper implements SettingsKeeper {
             if(url != null) {
                 String urlRegEx = "http://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
                 if(url.matches(urlRegEx)) {
-                    String checkedUrl = URLCheckUtil.checkUrl(url);
+                    String checkedUrl = URLUtil.checkUrl(url);
                     if(checkedUrl!=null) {
                         worker.setUrl(url);
                         return true;

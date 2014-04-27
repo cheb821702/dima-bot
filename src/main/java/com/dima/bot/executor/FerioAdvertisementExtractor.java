@@ -1,7 +1,7 @@
 package com.dima.bot.executor;
 
 import com.dima.bot.executor.model.Advertisement;
-import com.dima.bot.util.URLCheckUtil;
+import com.dima.bot.util.URLUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,7 +25,7 @@ public class FerioAdvertisementExtractor implements AdvertisementExtractor{
 
     @Override
     public List<Advertisement> extract(String url) {
-        url = URLCheckUtil.checkUrl(url);
+        url = URLUtil.checkUrl(url);
         List<Advertisement> advertisements = new ArrayList<Advertisement>();
 
         if(url==null) return advertisements;
