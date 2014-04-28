@@ -2,15 +2,12 @@ package com.dima.bot;
 
 import com.dima.bot.executor.AdvertisementExtractor;
 import com.dima.bot.executor.BotsManager;
-import com.dima.bot.executor.ExcelAutoFillUtil;
 import com.dima.bot.executor.FerioAdvertisementExtractor;
 import com.dima.bot.executor.model.Advertisement;
-import com.dima.bot.executor.model.AutoFillEntity;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.XMLKeeper;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.ui.ConfigurationPage;
-import com.dima.bot.util.HttpManager;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -37,7 +34,9 @@ public class Main {
             for (UrlWorker worker : list) {
                 System.out.println(worker.toString());
             }
-            new ConfigurationPage(new BotsManager(keeper));
+            BotsManager botsManager = new BotsManager(keeper);
+            botsManager.startAutoFillDetector();
+            new ConfigurationPage(botsManager);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SAXException e) {

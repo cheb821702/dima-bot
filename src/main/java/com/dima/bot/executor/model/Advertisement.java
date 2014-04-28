@@ -86,4 +86,38 @@ public class Advertisement {
     public void setPerformed(boolean performed) {
         this.performed = performed;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Advertisement)) return false;
+
+        Advertisement that = (Advertisement) o;
+
+        if (number != that.number) return false;
+        if (date != null ? !date.equals(that.date) : that.date != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = date != null ? date.hashCode() : 0;
+        result = 31 * result + (int) (number ^ (number >>> 32));
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Advertisement{" +
+                "date=" + date +
+                ", number=" + number +
+                ", auto='" + auto + '\'' +
+                ", autoYear=" + autoYear +
+                ", autoCode='" + autoCode + '\'' +
+                ", details=" + details +
+                ", openURL='" + openURL + '\'' +
+                ", performed=" + performed +
+                '}';
+    }
 }

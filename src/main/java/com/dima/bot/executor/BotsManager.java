@@ -3,9 +3,9 @@ package com.dima.bot.executor;
 import com.dima.bot.executor.model.AutoFillEntity;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
-import com.dima.bot.util.URLUtil;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,33 +16,55 @@ import java.util.concurrent.Executors;
 public class BotsManager implements SettingsKeeper{
 
     private SettingsKeeper keeper;
+    private TaskTracker taskTracker;
     private List<AutoFillEntity> autoFillEntities;
+    private Date dateOfLastAutoFill = null;
+    private boolean processingAutoFillingEnable = true;
 
-    private boolean processingAutofillingEnable = true;
 
     public BotsManager(SettingsKeeper keeper) {
         this.keeper = keeper;
+        this.taskTracker = new TaskTracker(keeper.getUrlWorkers());
+
         ExcelAutoFillUtil autoFillUtil = new ExcelAutoFillUtil();
         this.autoFillEntities = autoFillUtil.getEntities(getAutoCompleteTemplatesPath());
 
+    }
 
+    public boolean isAfterDateLastAutoFill(Date date) {
+        if (date != null) {
+            if(dateOfLastAutoFill == null || date.after(dateOfLastAutoFill)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void setDateOfLastAutoFill(Date dateOfLastAutoFill) {
+        if(dateOfLastAutoFill != null) {
+            this.dateOfLastAutoFill = dateOfLastAutoFill;
+        }
     }
 
     public void startAutoFillDetector() {
-        if(processingAutofillingEnable) {
-            processingAutofillingEnable = false;
+        if(processingAutoFillingEnable) {
+            processingAutoFillingEnable = false;
             AutoFillDetector detector = new AutoFillDetector(this);
-            ExecutorService autofillEx = Executors.newFixedThreadPool(1);
-            autofillEx.execute(detector);
+            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
+            autoFillEx.execute(detector);
         }
     }
 
     public void finishAutoFillDetector() {
-        processingAutofillingEnable = true;
+        processingAutoFillingEnable = true;
     }
 
     public SettingsKeeper getKeeper() {
         return keeper;
+    }
+
+    public TaskTracker getTaskTracker() {
+        return taskTracker;
     }
 
     public List<AutoFillEntity> getAutoFillEntities() {

@@ -68,7 +68,15 @@ public class URLUtil {
         return null;
     }
 
-
-
-
+    public static String getUrlForPage(String url, int nPage) {
+        if(url != null) {
+            int index = url.indexOf("list=");
+            if(index > -1) {
+                return url.substring(0,index + 5) + nPage + url.substring(index + 6);
+            } else {
+                return url + "&list=" + nPage;
+            }
+        }
+        return url;
+    }
 }

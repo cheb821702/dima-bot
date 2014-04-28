@@ -62,35 +62,23 @@ public class ExcelAutoFillUtil {
                 while (rowIterator.hasNext())                {
                     Row row = rowIterator.next();
                     if(rowi > 0) {
-                        Iterator<Cell> cellIterator = row.cellIterator();
-
                         AutoFillEntity autoFillEntity = new AutoFillEntity();
-                        int celli = 0;
-                        while (cellIterator.hasNext())
+                        autoFillEntity.setSeries(getString(row.getCell(0)));
+                        autoFillEntity.setCarcass(getString(row.getCell(1)));
+                        autoFillEntity.setStartYear(getInteger(row.getCell(2)));
+                        autoFillEntity.setStopYear(getInteger(row.getCell(3)));
+                        autoFillEntity.setDetail(getString(row.getCell(4)));
+                        autoFillEntity.setCost(getInteger(row.getCell(5)));
+                        autoFillEntity.setDeliveryTime(deliveryTimeList.get(getInteger(row.getCell(6))));
+                        autoFillEntity.setState(stateList.get(getInteger(row.getCell(7))));
+                        autoFillEntity.setNote(getString(row.getCell(8)));
+
+                        if(autoFillEntity.getSeries()!=null && autoFillEntity.getCarcass()!=null &&
+                                autoFillEntity.getDetail()!=null && autoFillEntity.getCost()!=null &&
+                                autoFillEntity.getDeliveryTime()!=null && autoFillEntity.getState()!=null)
                         {
-                            Cell cell = cellIterator.next();
-                            if(celli == 0) {
-                                autoFillEntity.setSeries(getString(cell));
-                            } else if(celli == 1) {
-                                autoFillEntity.setCarcass(getString(cell));
-                            } else if(celli == 2) {
-                                autoFillEntity.setStartYear(getInteger(cell));
-                            } else if(celli == 3) {
-                                autoFillEntity.setStopYear(getInteger(cell));
-                            } else if(celli == 4) {
-                                autoFillEntity.setDetail(getString(cell));
-                            } else if(celli == 5) {
-                                autoFillEntity.setCost(getInteger(cell));
-                            } else if(celli == 6) {
-                                autoFillEntity.setDeliveryTime(deliveryTimeList.get(getInteger(cell)));
-                            } else if(celli == 7) {
-                                autoFillEntity.setState(stateList.get(getInteger(cell)));
-                            } else if(celli == 8) {
-                                autoFillEntity.setNote(getString(cell));
-                            }
-                            celli++;
+                            entities.add(autoFillEntity);
                         }
-                        entities.add(autoFillEntity);
                     }
                     rowi++;
                 }
@@ -105,31 +93,35 @@ public class ExcelAutoFillUtil {
     }
 
     private Integer getInteger(Cell cell) {
-        switch (cell.getCellType())
-        {
-            case Cell.CELL_TYPE_NUMERIC:
-                try {
-                    return (int) cell.getNumericCellValue();
-                } catch (NumberFormatException e) {
-                    return null;
-                }
-            case Cell.CELL_TYPE_STRING:
-                try {
-                    return Integer.valueOf(cell.getStringCellValue());
-                } catch (NumberFormatException e) {
-                    return null;
-                }
+        if(cell != null) {
+            switch (cell.getCellType())
+            {
+                case Cell.CELL_TYPE_NUMERIC:
+                    try {
+                        return (int) cell.getNumericCellValue();
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                case Cell.CELL_TYPE_STRING:
+                    try {
+                        return Integer.valueOf(cell.getStringCellValue());
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+            }
         }
         return null;
     }
 
     private String getString(Cell cell) {
-        switch (cell.getCellType())
-        {
-            case Cell.CELL_TYPE_NUMERIC:
-                return String.valueOf(cell.getNumericCellValue());
-            case Cell.CELL_TYPE_STRING:
-                 return cell.getStringCellValue();
+        if(cell != null) {
+            switch (cell.getCellType())
+            {
+                case Cell.CELL_TYPE_NUMERIC:
+                    return String.valueOf((int)cell.getNumericCellValue());
+                case Cell.CELL_TYPE_STRING:
+                     return cell.getStringCellValue();
+            }
         }
         return null;
     }

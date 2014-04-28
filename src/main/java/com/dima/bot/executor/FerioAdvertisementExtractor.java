@@ -22,10 +22,11 @@ import java.util.*;
 public class FerioAdvertisementExtractor implements AdvertisementExtractor{
 
     public static final String SITE_URL = "http://www.ferio.ru/clad/";
+    private static final int MAX_N_PAGE = 10;
 
     @Override
     public List<Advertisement> extract(String url) {
-        url = URLUtil.checkUrl(url);
+//        url = URLUtil.checkUrl(url);
         List<Advertisement> advertisements = new ArrayList<Advertisement>();
 
         if(url==null) return advertisements;
@@ -102,7 +103,7 @@ public class FerioAdvertisementExtractor implements AdvertisementExtractor{
                                                             html = html.substring(html.indexOf("</i>")+4).trim();
                                                             for(String htmlEl : html.split("<br />")) {
                                                                 if(!htmlEl.isEmpty()) {
-                                                                    String[] detailParts = htmlEl.trim().split("|");
+                                                                    String[] detailParts = htmlEl.trim().split("\\|");
                                                                     if(detailParts.length >= 2) {
                                                                         details.put(detailParts[0].trim(),detailParts[1].trim());
                                                                     }
@@ -158,5 +159,10 @@ public class FerioAdvertisementExtractor implements AdvertisementExtractor{
     @Override
     public String getSiteUrl() {
         return SITE_URL;
+    }
+
+    @Override
+    public int getMaxNPage() {
+        return MAX_N_PAGE;
     }
 }

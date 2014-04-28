@@ -15,4 +15,5 @@ public interface AdvertisementExtractor {
 
     List<Advertisement> extract(String url);
     String getSiteUrl();
+    int getMaxNPage();
 }
