@@ -1,6 +1,6 @@
 package com.dima.bot.util;
 
-import com.dima.bot.executor.FerioAdvertisementExtractor;
+import com.dima.bot.executor.FerioAdvertisementParser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +16,7 @@ public class URLUtil {
 
     public static String checkUrl(String url) {
         if(url != null) {
-            if(url.startsWith(FerioAdvertisementExtractor.SITE_URL)) {
+            if(url.startsWith(FerioAdvertisementParser.SITE_URL)) {
                 return checkFerio(url);
             }
         }

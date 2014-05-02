@@ -19,7 +19,7 @@ import java.util.*;
  * Time: 1:25 PM
  * To change this template use File | Settings | File Templates.
  */
-public class FerioAdvertisementExtractor implements AdvertisementExtractor{
+public class FerioAdvertisementParser implements AdvertisementExtractor{
 
     public static final String SITE_URL = "http://www.ferio.ru/clad/";
     private static final int MAX_N_PAGE = 10;

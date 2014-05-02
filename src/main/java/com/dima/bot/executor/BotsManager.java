@@ -73,8 +73,8 @@ public class BotsManager implements SettingsKeeper{
 
     public AdvertisementExtractor factoryAdvertisementExtractor(String url) {
         if(url != null) {
-            if(url.startsWith(FerioAdvertisementExtractor.SITE_URL)) {
-                return new FerioAdvertisementExtractor();
+            if(url.startsWith(FerioAdvertisementParser.SITE_URL)) {
+                return new FerioAdvertisementParser();
             }
         }
         return null;

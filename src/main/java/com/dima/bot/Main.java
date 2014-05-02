@@ -2,7 +2,7 @@ package com.dima.bot;
 
 import com.dima.bot.executor.AdvertisementExtractor;
 import com.dima.bot.executor.BotsManager;
-import com.dima.bot.executor.FerioAdvertisementExtractor;
+import com.dima.bot.executor.FerioAdvertisementParser;
 import com.dima.bot.executor.model.Advertisement;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.XMLKeeper;
@@ -21,7 +21,7 @@ public class Main {
 
         String url = "http://www.ferio.ru/clad/?ch=orders&st=ok&agent=53983&cp=901726&brand=2&criterion=&day=&month=&year=&keywrd=&list=1";
 
-        AdvertisementExtractor extractor = new FerioAdvertisementExtractor();
+        AdvertisementExtractor extractor = new FerioAdvertisementParser();
         List<Advertisement> advertisements =  extractor.extract(url);
 
         try {
