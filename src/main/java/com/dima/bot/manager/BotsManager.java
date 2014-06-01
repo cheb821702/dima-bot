@@ -1,6 +1,10 @@
-package com.dima.bot.executor;
+package com.dima.bot.manager;
 
-import com.dima.bot.executor.model.AutoFillEntity;
+import com.dima.bot.manager.detector.AutoFillDetector;
+import com.dima.bot.manager.detector.ExecutedAdvertisementDetector;
+import com.dima.bot.manager.executor.*;
+import com.dima.bot.manager.model.AutoFillEntity;
+import com.dima.bot.manager.util.ExcelAutoFillUtil;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
 
@@ -20,6 +24,8 @@ public class BotsManager implements SettingsKeeper{
     private List<AutoFillEntity> autoFillEntities;
     private Date dateOfLastAutoFill = null;
     private boolean processingAutoFillingEnable = true;
+    private Date dateOfLastExecutedAnswer = null;
+    private boolean processingExecutedAnswerEnable = true;
 
 
     public BotsManager(SettingsKeeper keeper) {
@@ -29,6 +35,34 @@ public class BotsManager implements SettingsKeeper{
         ExcelAutoFillUtil autoFillUtil = new ExcelAutoFillUtil();
         this.autoFillEntities = autoFillUtil.getEntities(getAutoCompleteTemplatesPath());
 
+    }
+
+    public boolean isAfterDateLastExecutedAnswer(Date date) {
+        if (date != null) {
+            if(dateOfLastExecutedAnswer == null || date.after(dateOfLastExecutedAnswer)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void setDateOfLastExecutedAnswer(Date dateOfLastExecutedAnswer) {
+        if(dateOfLastExecutedAnswer != null) {
+            this.dateOfLastExecutedAnswer = dateOfLastExecutedAnswer;
+        }
+    }
+
+    public void startExecutedAdvertisementDetector() {
+        if(processingExecutedAnswerEnable) {
+            processingExecutedAnswerEnable = false;
+            ExecutedAdvertisementDetector detector = new ExecutedAdvertisementDetector(this);
+            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
+            autoFillEx.execute(detector);
+        }
+    }
+
+    public void finishExecutedAdvertisementDetector() {
+        processingExecutedAnswerEnable = true;
     }
 
     public boolean isAfterDateLastAutoFill(Date date) {
@@ -73,8 +107,10 @@ public class BotsManager implements SettingsKeeper{
 
     public AdvertisementExtractor factoryAdvertisementExtractor(String url) {
         if(url != null) {
-            if(url.startsWith(FerioAdvertisementParser.SITE_URL)) {
-                return new FerioAdvertisementParser();
+            if(url.startsWith(FerioAdvertisementExtractor.SITE_URL)) {
+                return new FerioAdvertisementExtractor();
+            } else if(url.startsWith(FerioNewAdvertisementExtractor.SITE_URL)) {
+                return new FerioNewAdvertisementExtractor();
             }
         }
         return null;

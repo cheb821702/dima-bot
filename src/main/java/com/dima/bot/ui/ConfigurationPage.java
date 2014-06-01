@@ -1,6 +1,6 @@
 package com.dima.bot.ui;
 
-import com.dima.bot.executor.BotsManager;
+import com.dima.bot.manager.BotsManager;
 import com.dima.bot.settings.model.UrlWorker;
 import org.apache.log4j.Logger;
 

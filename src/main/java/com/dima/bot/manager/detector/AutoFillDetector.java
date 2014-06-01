@@ -1,8 +1,10 @@
-package com.dima.bot.executor;
+package com.dima.bot.manager.detector;
 
-import com.dima.bot.executor.model.Advertisement;
-import com.dima.bot.executor.model.AutoFillAdvertisement;
-import com.dima.bot.executor.model.AutoFillEntity;
+import com.dima.bot.manager.executor.AdvertisementExtractor;
+import com.dima.bot.manager.model.Advertisement;
+import com.dima.bot.manager.model.NewAdvertisement;
+import com.dima.bot.manager.model.AutoFillEntity;
+import com.dima.bot.manager.BotsManager;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.util.URLUtil;
 
@@ -31,13 +33,13 @@ public class AutoFillDetector implements Runnable{
                     for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
                         if(checkDate(advertisement.getDate())) {
                             if(!advertisement.isPerformed()) {
-                                AutoFillAdvertisement autoFillAdvertisement = null;
+                                NewAdvertisement autoFillAdvertisement = null;
                                 for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
                                     if(checkAuto(advertisement, autoFillEntity)) {
                                         for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
                                             if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
                                                 if(autoFillAdvertisement == null) {
-                                                    autoFillAdvertisement = new AutoFillAdvertisement(advertisement);
+                                                    autoFillAdvertisement = new NewAdvertisement(advertisement);
                                                 }
                                                 autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
                                             }

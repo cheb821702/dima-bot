@@ -1,9 +1,9 @@
 package com.dima.bot;
 
-import com.dima.bot.executor.AdvertisementExtractor;
-import com.dima.bot.executor.BotsManager;
-import com.dima.bot.executor.FerioAdvertisementParser;
-import com.dima.bot.executor.model.Advertisement;
+import com.dima.bot.manager.executor.AdvertisementExtractor;
+import com.dima.bot.manager.BotsManager;
+import com.dima.bot.manager.executor.FerioAdvertisementExtractor;
+import com.dima.bot.manager.model.Advertisement;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.XMLKeeper;
 import com.dima.bot.settings.model.UrlWorker;
@@ -21,7 +21,7 @@ public class Main {
 
         String url = "http://www.ferio.ru/clad/?ch=orders&st=ok&agent=53983&cp=901726&brand=2&criterion=&day=&month=&year=&keywrd=&list=1";
 
-        AdvertisementExtractor extractor = new FerioAdvertisementParser();
+        AdvertisementExtractor extractor = new FerioAdvertisementExtractor();
         List<Advertisement> advertisements =  extractor.extract(url);
 
         try {
@@ -36,6 +36,7 @@ public class Main {
             }
             BotsManager botsManager = new BotsManager(keeper);
             botsManager.startAutoFillDetector();
+            botsManager.startExecutedAdvertisementDetector();
             new ConfigurationPage(botsManager);
         } catch (IOException e) {
             e.printStackTrace();
