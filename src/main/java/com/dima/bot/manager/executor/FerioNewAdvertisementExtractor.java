@@ -49,12 +49,24 @@ public class FerioNewAdvertisementExtractor implements AdvertisementExtractor {
                         break;
                     }
                 }
-
+                String numberstr = null;
+                boolean marker = false;
                 for(Element child : tbody2.children()) {
                     if("tr".equals(child.nodeName()) && child.className().contains("inputs-")) {
+                        if(!child.className().equals(numberstr)) {
+                            numberstr = child.className().substring(7);
+                            marker = true;
+                        }
+                        if(marker) {
+                            Element td2 = getChild(child,"td",1);
+                            if(td2!= null) {
+                                Element textarea = getChild(child,"textarea",1);
+                                if(textarea != null && textarea.className().contains("zapros-")) {
 
-                    } else {
-
+                                    marker = false;
+                                }
+                            }
+                        }
                     }
                 }
 
