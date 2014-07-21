@@ -5,6 +5,7 @@ import com.dima.bot.manager.detector.ExecutedAdvertisementDetector;
 import com.dima.bot.manager.executor.*;
 import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.util.ExcelAutoFillUtil;
+import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
 
@@ -56,8 +57,9 @@ public class BotsManager implements SettingsKeeper{
         if(processingExecutedAnswerEnable) {
             processingExecutedAnswerEnable = false;
             ExecutedAdvertisementDetector detector = new ExecutedAdvertisementDetector(this);
-            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
-            autoFillEx.execute(detector);
+            ThreadManager.INSTANCE.execute(detector);
+//            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
+//            autoFillEx.execute(detector);
         }
     }
 
@@ -84,8 +86,9 @@ public class BotsManager implements SettingsKeeper{
         if(processingAutoFillingEnable) {
             processingAutoFillingEnable = false;
             AutoFillDetector detector = new AutoFillDetector(this);
-            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
-            autoFillEx.execute(detector);
+            ThreadManager.INSTANCE.execute(detector);
+//            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
+//            autoFillEx.execute(detector);
         }
     }
 

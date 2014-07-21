@@ -3,6 +3,7 @@ package com.dima.bot.settings;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.util.URLUtil;
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,6 +55,14 @@ public class XMLKeeper implements SettingsKeeper {
     @Override
     public String addSeniorUrlWorker(UrlWorker urlWorker) {
         if(urlWorker != null) {
+            // Url validation
+            try {
+                org.jsoup.nodes.Document doc = Jsoup.connect(urlWorker.getUrl()).get();
+            } catch (Exception ex) {
+                logger.error("Incorrect URL " + urlWorker.getUrl(),ex);
+                return null;
+            }
+
             Document doc = null;
             try {
                 doc = getInitDocument();
@@ -78,6 +87,14 @@ public class XMLKeeper implements SettingsKeeper {
     @Override
     public String addVassalUrlWorker(UrlWorker urlWorker) {
         if(urlWorker != null) {
+            // Url validation
+            try {
+                org.jsoup.nodes.Document doc = Jsoup.connect(urlWorker.getUrl()).get();
+            } catch (Exception ex) {
+                logger.error("Incorrect URL " + urlWorker.getUrl(),ex);
+                return null;
+            }
+
             Document doc = null;
             try {
                 doc = getInitDocument();
@@ -541,10 +558,10 @@ public class XMLKeeper implements SettingsKeeper {
                         return true;
                     }
                 } else {
-                    logger.debug("Incorrect URL " + worker.getUrl());
+                    logger.error("Incorrect URL " + worker.getUrl());
                 }
             } else {
-                logger.debug("Fail validation " + worker.getUrl());
+                logger.error("Fail validation " + worker.getUrl());
             }
         } else {
             logger.debug("Fail validation UrlWorker null");

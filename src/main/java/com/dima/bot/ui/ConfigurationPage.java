@@ -1,6 +1,7 @@
 package com.dima.bot.ui;
 
 import com.dima.bot.manager.BotsManager;
+import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.model.UrlWorker;
 import org.apache.log4j.Logger;
 
@@ -242,7 +243,14 @@ public class ConfigurationPage extends JFrame {
 
         setVisible(true);
         setSize(500, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                ThreadManager.INSTANCE.shutdown();
+                System.exit(0);
+            }
+        });
+        //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     private void initTray() {
@@ -260,6 +268,7 @@ public class ConfigurationPage extends JFrame {
             ActionListener exitListener=new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     //Exiting....
+                    ThreadManager.INSTANCE.shutdown();
                     System.exit(0);
                 }
             };
