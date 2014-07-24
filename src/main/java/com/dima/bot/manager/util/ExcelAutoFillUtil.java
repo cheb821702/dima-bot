@@ -125,4 +125,12 @@ public class ExcelAutoFillUtil {
         }
         return null;
     }
+
+    public static Map<Integer, String> getDeliveryTimeList() {
+        return deliveryTimeList;
+    }
+
+    public static Map<Integer, String> getStateList() {
+        return stateList;
+    }
 }

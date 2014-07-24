@@ -3,15 +3,14 @@ package com.dima.bot.manager.executor;
 import com.dima.bot.manager.model.Advertisement;
 import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.model.NewAdvertisement;
+import com.dima.bot.manager.util.ExcelAutoFillUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
+
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -75,9 +74,45 @@ public class FerioNewAdvertisementExtractor implements AdvertisementExtractor {
                 }
                 String answerText = tdAnswer.text();
                 String answerHtml = tdAnswer.html();
+                Map<Integer,String> posDetails = new HashMap<Integer,String>();
+                for(String zapros : zaprosi) {
+                    int pos = answerText.indexOf(zapros);
+                    if(pos > 0) {
+                        posDetails.put(pos, zapros);
+                    }
+                }
+
+                NewAdvertisement advertisement = new NewAdvertisement();
+                List<Integer> posSet = new ArrayList<Integer>(posDetails.keySet());
+                for(int i = 0; i < posSet.size(); i++) {
+                    AutoFillEntity entity = new AutoFillEntity();
+                    String answerStr = null;
+                    if(posSet.size()-1 == i) {
+                        answerStr = answerText.substring(posSet.get(i));
+                    }   else {
+                        answerStr = answerText.substring(posSet.get(i),posSet.get(i+1));
+                    }
+                    answerStr = answerStr.substring(posDetails.get(posSet.get(i)).length()).trim();
+
+                    for(Map.Entry<Integer, String> delivTime: ExcelAutoFillUtil.getDeliveryTimeList().entrySet()) {
+                        if(answerStr.startsWith(delivTime.getValue())) {
+                            answerStr = answerStr.substring(delivTime.getValue().length()).trim();
+                            break;
+                        }
+                    }
+
+                    for(Map.Entry<Integer, String> states: ExcelAutoFillUtil.getStateList().entrySet()) {
+                        if(answerStr.startsWith(states.getValue())) {
+                            answerStr = answerStr.substring(states.getValue().length()).trim();
+                            break;
+                        }
+                    }
+                    advertisement.getAutoFillDetailsMap().put(posDetails.get(posSet.get(i)), entity);
+                }
+
                 for(String answer : answerHtml.split("<br/>")) {
                     for(String zapros : zaprosi) {
-                        NewAdvertisement advertisement = new NewAdvertisement();
+//                        NewAdvertisement advertisement = new NewAdvertisement();
                         AutoFillEntity entity = new AutoFillEntity();
 
                     }
