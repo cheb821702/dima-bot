@@ -72,6 +72,7 @@ public class FerioNewAdvertisementExtractor implements AdvertisementExtractor {
                         }
                     }
                 }
+
                 String answerText = tdAnswer.text();
                 String answerHtml = tdAnswer.html();
                 Map<Integer,String> posDetails = new HashMap<Integer,String>();
@@ -94,9 +95,14 @@ public class FerioNewAdvertisementExtractor implements AdvertisementExtractor {
                     }
                     answerStr = answerStr.substring(posDetails.get(posSet.get(i)).length()).trim();
 
+                    int cost  = Integer.parseInt(answerStr.substring(0, answerStr.indexOf("руб.")).trim());
+                    entity.setCost(cost);
+                    answerStr = answerStr.substring(answerStr.indexOf("руб.") + 4).trim();
+
                     for(Map.Entry<Integer, String> delivTime: ExcelAutoFillUtil.getDeliveryTimeList().entrySet()) {
                         if(answerStr.startsWith(delivTime.getValue())) {
                             answerStr = answerStr.substring(delivTime.getValue().length()).trim();
+                            entity.setDeliveryTime(delivTime.getValue());
                             break;
                         }
                     }
@@ -104,20 +110,14 @@ public class FerioNewAdvertisementExtractor implements AdvertisementExtractor {
                     for(Map.Entry<Integer, String> states: ExcelAutoFillUtil.getStateList().entrySet()) {
                         if(answerStr.startsWith(states.getValue())) {
                             answerStr = answerStr.substring(states.getValue().length()).trim();
+                            entity.setState(states.getValue());
                             break;
                         }
                     }
                     advertisement.getAutoFillDetailsMap().put(posDetails.get(posSet.get(i)), entity);
+                    advertisements.add(advertisement);
                 }
-
-                for(String answer : answerHtml.split("<br/>")) {
-                    for(String zapros : zaprosi) {
-//                        NewAdvertisement advertisement = new NewAdvertisement();
-                        AutoFillEntity entity = new AutoFillEntity();
-
-                    }
-                }
-            }
+          }
         } catch (IOException e) {
             e.printStackTrace();
         }
