@@ -25,52 +25,60 @@ public class AutoFillDetector implements Runnable{
 
     @Override
     public void run() {
-        for(UrlWorker worker : manager.getKeeper().getUrlWorkers()) {
-            AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
-            if(extractor != null) {
-                for(int i = 1; i <= extractor.getMaxNPage(); i++) {
-                    boolean isBreak = false;
-                    for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
-                        if(checkDate(advertisement.getDate())) {
-                            if(!advertisement.isPerformed()) {
-                                NewAdvertisement autoFillAdvertisement = null;
-                                for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
-                                    if(checkAuto(advertisement, autoFillEntity)) {
-                                        for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
-                                            if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
-                                                if(autoFillAdvertisement == null) {
-                                                    autoFillAdvertisement = new NewAdvertisement(advertisement);
+        while(!manager.isPauseProcessingAutoFilling()) {
+            for(int workindex = 0; workindex < manager.getKeeper().getUrlWorkers().size() && !manager.isPauseProcessingAutoFilling(); workindex++  ) {
+                UrlWorker worker = manager.getKeeper().getUrlWorkers().get(workindex);
+                AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
+                if(extractor != null) {
+                    for(int i = 1; i <= extractor.getMaxNPage(); i++) {
+                        boolean isBreak = false;
+                        for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
+                            if(checkDate(worker, advertisement.getDate())) {
+                                if(!advertisement.isPerformed()) {
+                                    NewAdvertisement autoFillAdvertisement = null;
+                                    for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
+                                        if(checkAuto(advertisement, autoFillEntity)) {
+                                            for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
+                                                if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
+                                                    if(autoFillAdvertisement == null) {
+                                                        autoFillAdvertisement = new NewAdvertisement(advertisement);
+                                                    }
+                                                    autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
                                                 }
-                                                autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
                                             }
                                         }
                                     }
+                                    if(autoFillAdvertisement != null) {
+                                        manager.getTaskTracker().addAutoFillTask(worker,autoFillAdvertisement);
+                                    }
                                 }
-                                if(autoFillAdvertisement != null) {
-                                    manager.getTaskTracker().addAutoFillTask(worker,autoFillAdvertisement);
-                                }
+                            } else {
+                                isBreak = true;
                             }
-                        } else {
-                            isBreak = true;
+                        }
+                        if(isBreak) {
+                            break;
                         }
                     }
-                    if(isBreak) {
-                        break;
-                    }
                 }
+                manager.setDateOfLastAutoFill(worker, lastDate);
+            }
+            try {
+                Thread.sleep(manager.getRepeatDetectorSec());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-        manager.setDateOfLastAutoFill(lastDate);
         manager.finishAutoFillDetector();
     }
 
-    private boolean checkDate(Date date) {
+    private boolean checkDate(UrlWorker worker, Date date) {
         if (date != null) {
             if(lastDate == null || date.after(lastDate)) {
                 lastDate = date;
             }
         }
-        return manager.isAfterDateLastAutoFill(date);
+        return manager.isAfterDateLastAutoFill(worker, date);
     }
 
     private boolean checkDetail(String  advertisementDetail, String  autoFillEntityDetail) {

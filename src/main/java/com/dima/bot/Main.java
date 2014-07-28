@@ -35,8 +35,8 @@ public class Main {
                 System.out.println(worker.toString());
             }
             BotsManager botsManager = new BotsManager(keeper);
-            botsManager.startAutoFillDetector();
-            botsManager.startExecutedAdvertisementDetector();
+            botsManager.runAutoFillDetector();
+            botsManager.runExecutedAdvertisementDetector();
             new ConfigurationPage(botsManager);
         } catch (IOException e) {
             e.printStackTrace();

@@ -9,9 +9,7 @@ import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,10 +21,13 @@ public class BotsManager implements SettingsKeeper{
     private SettingsKeeper keeper;
     private TaskTracker taskTracker;
     private List<AutoFillEntity> autoFillEntities;
-    private Date dateOfLastAutoFill = null;
+    private Map<UrlWorker, Date> dateOfLastAutoFill = new HashMap<UrlWorker,Date>();
     private boolean processingAutoFillingEnable = true;
-    private Date dateOfLastExecutedAnswer = null;
+    private boolean pauseProcessingAutoFilling = false;
+    private Map<UrlWorker, Date> dateOfLastExecutedAnswer = new HashMap<UrlWorker,Date>();
     private boolean processingExecutedAnswerEnable = true;
+    private boolean pauseProcessingExecutedAnswer = false;
+    private int repeatDetectorSec = 1200;
 
 
     public BotsManager(SettingsKeeper keeper) {
@@ -35,31 +36,40 @@ public class BotsManager implements SettingsKeeper{
 
         ExcelAutoFillUtil autoFillUtil = new ExcelAutoFillUtil();
         this.autoFillEntities = autoFillUtil.getEntities(getAutoCompleteTemplatesPath());
-
     }
 
-    public boolean isAfterDateLastExecutedAnswer(Date date) {
-        if (date != null) {
-            if(dateOfLastExecutedAnswer == null || date.after(dateOfLastExecutedAnswer)) {
+    public boolean isAfterDateLastExecutedAnswer(UrlWorker worker, Date date) {
+        if (worker != null && date != null) {
+            if(!dateOfLastExecutedAnswer.keySet().contains(worker) || dateOfLastExecutedAnswer.get(worker) == null || date.after(dateOfLastExecutedAnswer.get(worker))) {
                 return true;
             }
         }
         return false;
     }
 
-    public void setDateOfLastExecutedAnswer(Date dateOfLastExecutedAnswer) {
-        if(dateOfLastExecutedAnswer != null) {
-            this.dateOfLastExecutedAnswer = dateOfLastExecutedAnswer;
+    public void setDateOfLastExecutedAnswer(UrlWorker worker, Date dateOfLastExecutedAnswer) {
+        if(worker != null && dateOfLastExecutedAnswer != null) {
+            this.dateOfLastExecutedAnswer.put(worker, dateOfLastExecutedAnswer);
         }
     }
 
-    public void startExecutedAdvertisementDetector() {
-        if(processingExecutedAnswerEnable) {
+    public boolean isPauseProcessingExecutedAnswer() {
+        return pauseProcessingExecutedAnswer;
+    }
+
+    public void startProcessingExecutedAnswer() {
+        this.pauseProcessingExecutedAnswer = false;
+    }
+
+    public void pauseProcessingExecutedAnswer() {
+        this.pauseProcessingExecutedAnswer = true;
+    }
+
+    public void runExecutedAdvertisementDetector() {
+        if(!pauseProcessingExecutedAnswer && processingExecutedAnswerEnable) {
             processingExecutedAnswerEnable = false;
             ExecutedAdvertisementDetector detector = new ExecutedAdvertisementDetector(this);
             ThreadManager.INSTANCE.execute(detector);
-//            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
-//            autoFillEx.execute(detector);
         }
     }
 
@@ -67,28 +77,38 @@ public class BotsManager implements SettingsKeeper{
         processingExecutedAnswerEnable = true;
     }
 
-    public boolean isAfterDateLastAutoFill(Date date) {
-        if (date != null) {
-            if(dateOfLastAutoFill == null || date.after(dateOfLastAutoFill)) {
+    public boolean isAfterDateLastAutoFill(UrlWorker worker, Date date) {
+        if (worker != null && date != null) {
+            if(!dateOfLastAutoFill.keySet().contains(worker) || dateOfLastAutoFill.get(worker) == null || date.after(dateOfLastAutoFill.get(worker))) {
                 return true;
             }
         }
         return false;
     }
 
-    public void setDateOfLastAutoFill(Date dateOfLastAutoFill) {
-        if(dateOfLastAutoFill != null) {
-            this.dateOfLastAutoFill = dateOfLastAutoFill;
+    public void setDateOfLastAutoFill(UrlWorker worker,Date dateOfLastAutoFill) {
+        if(worker != null && dateOfLastAutoFill != null) {
+            this.dateOfLastAutoFill.put(worker, dateOfLastAutoFill);
         }
     }
 
-    public void startAutoFillDetector() {
-        if(processingAutoFillingEnable) {
+    public boolean isPauseProcessingAutoFilling() {
+        return pauseProcessingAutoFilling;
+    }
+
+    public void startProcessingAutoFilling() {
+        this.pauseProcessingAutoFilling = false;
+    }
+
+    public void pauseProcessingAutoFilling() {
+        this.pauseProcessingAutoFilling = true;
+    }
+
+    public void runAutoFillDetector() {
+        if(!pauseProcessingAutoFilling && processingAutoFillingEnable) {
             processingAutoFillingEnable = false;
             AutoFillDetector detector = new AutoFillDetector(this);
             ThreadManager.INSTANCE.execute(detector);
-//            ExecutorService autoFillEx = Executors.newFixedThreadPool(1);
-//            autoFillEx.execute(detector);
         }
     }
 
@@ -117,6 +137,14 @@ public class BotsManager implements SettingsKeeper{
             }
         }
         return null;
+    }
+
+    public int getRepeatDetectorSec() {
+        return repeatDetectorSec;
+    }
+
+    public void setRepeatDetectorSec(int repeatDetectorSec) {
+        this.repeatDetectorSec = repeatDetectorSec;
     }
 
     @Override

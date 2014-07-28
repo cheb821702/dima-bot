@@ -83,14 +83,17 @@ public class FerioNewAdvertisementExtractor implements AdvertisementExtractor {
                     }
                 }
 
+
+
                 NewAdvertisement advertisement = new NewAdvertisement();
                 List<Integer> posSet = new ArrayList<Integer>(posDetails.keySet());
+                Collections.sort(posSet);
                 for(int i = 0; i < posSet.size(); i++) {
                     AutoFillEntity entity = new AutoFillEntity();
                     String answerStr = null;
                     if(posSet.size()-1 == i) {
                         answerStr = answerText.substring(posSet.get(i));
-                    }   else {
+                    } else {
                         answerStr = answerText.substring(posSet.get(i),posSet.get(i+1));
                     }
                     answerStr = answerStr.substring(posDetails.get(posSet.get(i)).length()).trim();
@@ -115,8 +118,8 @@ public class FerioNewAdvertisementExtractor implements AdvertisementExtractor {
                         }
                     }
                     advertisement.getAutoFillDetailsMap().put(posDetails.get(posSet.get(i)), entity);
-                    advertisements.add(advertisement);
                 }
+                advertisements.add(advertisement);
           }
         } catch (IOException e) {
             e.printStackTrace();

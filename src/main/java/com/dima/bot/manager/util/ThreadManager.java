@@ -19,7 +19,6 @@ public enum ThreadManager {
 
     private ThreadManager() {
         cores = Runtime.getRuntime().availableProcessors();
-//        cores = 100;
         worksQueue = new ArrayBlockingQueue<Runnable>(10);
         executionHandler = new RejectedExecutionHandelerImpl();
         executor = new ThreadPoolExecutor(cores, cores+1, 10,
