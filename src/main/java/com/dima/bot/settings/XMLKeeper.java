@@ -47,6 +47,8 @@ public class XMLKeeper implements SettingsKeeper {
     private static final String URL_WORKER_MAX_TIME_PROP = "maxSecTime";
     private static final String URL_WORKER_SENIOR_STATUS_PROP = "seniorStatus";
 
+    private List<UrlWorker> cashWorkers = new ArrayList<UrlWorker>();
+    private boolean updateCashWorkers = true;
 
     public XMLKeeper() throws IOException, SAXException, ParserConfigurationException, TransformerException {
        getInitDocument();
@@ -78,6 +80,7 @@ public class XMLKeeper implements SettingsKeeper {
             }
 
             urlWorker.setSeniorStatus(true);
+            updateCashWorkers = true;
             return disassembleUrlWorker(doc, urlWorker);
 
         }
@@ -110,8 +113,8 @@ public class XMLKeeper implements SettingsKeeper {
             }
 
             urlWorker.setSeniorStatus(false);
+            updateCashWorkers = true;
             return disassembleUrlWorker(doc, urlWorker);
-
         }
         return null;
     }
@@ -136,6 +139,7 @@ public class XMLKeeper implements SettingsKeeper {
             urlWorker.setSeniorStatus(true);
 
             if(doc != null && urlWorker != null && isWorkerValid(urlWorker))  {
+                updateCashWorkers = true;
                 Node workersNode = getWorkerNodes(doc);
                 removeUrlWorker(workersNode, urlWorker);
 
@@ -154,60 +158,66 @@ public class XMLKeeper implements SettingsKeeper {
 
     @Override
     public List<UrlWorker> getUrlWorkers() {
-        Document doc = null;
-        try {
-            doc = getInitDocument();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if(doc == null) {
-            return null;
-        }
+        if(!updateCashWorkers) {
+            return cashWorkers;
+        } else {
+            Document doc = null;
+            try {
+                doc = getInitDocument();
+            } catch (ParserConfigurationException e) {
+                e.printStackTrace();
+            } catch (TransformerException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(doc == null) {
+                return null;
+            }
 
-        Node workersNode = getWorkerNodes(doc);
+            Node workersNode = getWorkerNodes(doc);
 
-        List<UrlWorker> workers = new ArrayList<UrlWorker>();
-        if(workersNode != null) {
-            NodeList workerNodes = workersNode.getChildNodes();
-            for (int i = 0; i < workerNodes.getLength(); i++) {
-                Node node = workerNodes.item(i);
-                if (Node.ELEMENT_NODE == node.getNodeType() && URL_WORKER.equals(node.getNodeName())) {
-                    UrlWorker worker = assembleUrlWorker(node);
-                    if(isWorkerValid(worker)) {
-                        workers.add(worker);
-                    } else {
-                        workersNode.removeChild(node);
+            List<UrlWorker> workers = new ArrayList<UrlWorker>();
+            if(workersNode != null) {
+                NodeList workerNodes = workersNode.getChildNodes();
+                for (int i = 0; i < workerNodes.getLength(); i++) {
+                    Node node = workerNodes.item(i);
+                    if (Node.ELEMENT_NODE == node.getNodeType() && URL_WORKER.equals(node.getNodeName())) {
+                        UrlWorker worker = assembleUrlWorker(node);
+                        if(isWorkerValid(worker)) {
+                            workers.add(worker);
+                        } else {
+                            workersNode.removeChild(node);
+                        }
                     }
                 }
             }
-        }
-        try {
-            writeDocInFile(doc,new File(FILE_PATH + FILE_NAME));
-        } catch (TransformerException e) {
-            logger.error("Can't open init.xml.",e);
-        }
-        Collections.sort(workers,new Comparator<UrlWorker>() {
-            @Override
-            public int compare(UrlWorker o1, UrlWorker o2) {
-                int res = 0;
-                if(o1.getUrl() != null) {
-                    res = o1.getUrl().compareTo(o2.getUrl());
-                } else if(o2.getUrl() != null) {
-                    res = -1;
-                }
-                if(o1.isSeniorStatus() && !o2.isSeniorStatus()) {
-                    res = 1;
-                } else if(!o1.isSeniorStatus() && o2.isSeniorStatus()) {
-                    res = -1;
-                }
-                return res;
+            try {
+                writeDocInFile(doc,new File(FILE_PATH + FILE_NAME));
+            } catch (TransformerException e) {
+                logger.error("Can't open init.xml.",e);
             }
-        });
-        return workers;
+            Collections.sort(workers,new Comparator<UrlWorker>() {
+                @Override
+                public int compare(UrlWorker o1, UrlWorker o2) {
+                    int res = 0;
+                    if(o1.getUrl() != null) {
+                        res = o1.getUrl().compareTo(o2.getUrl());
+                    } else if(o2.getUrl() != null) {
+                        res = -1;
+                    }
+                    if(o1.isSeniorStatus() && !o2.isSeniorStatus()) {
+                        res = 1;
+                    } else if(!o1.isSeniorStatus() && o2.isSeniorStatus()) {
+                        res = -1;
+                    }
+                    return res;
+                }
+            });
+            updateCashWorkers = false;
+            cashWorkers = workers;
+            return workers;
+        }
     }
 
     @Override

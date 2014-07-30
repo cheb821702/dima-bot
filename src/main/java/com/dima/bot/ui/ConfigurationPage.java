@@ -24,6 +24,14 @@ public class ConfigurationPage extends JFrame {
     private TrayIcon trayIcon;
     private SystemTray tray;
     private BotsManager manager;
+
+    private JButton chooseACTFileButton;
+    private final JTable table;
+    private JButton addButton;
+    private JButton removeButton;
+    private JButton editButton;
+    private JButton pauseButton;
+
     public ConfigurationPage(BotsManager initManager){
         super("Staff Worker");
 
@@ -44,7 +52,7 @@ public class ConfigurationPage extends JFrame {
         }
         actPane.add(chooseACTFileLabel);
         actPane.add(Box.createRigidArea(new Dimension(0, 5)));
-        JButton chooseACTFileButton = new JButton("Файл автозаполнения");
+        chooseACTFileButton = new JButton("Файл автозаполнения");
         chooseACTFileButton.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,7 +103,7 @@ public class ConfigurationPage extends JFrame {
         actPane.add(chooseACTFileButton);
         actPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        final JTable table = new JTable(new AbstractTableModel() {
+        table = new JTable(new AbstractTableModel() {
 
             private String[] columnNames = {"Адрес","Цена","Процент","Время","Статус"};
 
@@ -144,7 +152,7 @@ public class ConfigurationPage extends JFrame {
 
         JPanel tableButtonsPane = new JPanel();
         tableButtonsPane.setLayout(new FlowLayout());
-        JButton addButton = new JButton("Добавить");
+        addButton = new JButton("Добавить");
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -166,7 +174,7 @@ public class ConfigurationPage extends JFrame {
             }
         });
         tableButtonsPane.add(addButton);
-        JButton removeButton = new JButton("Удалить");
+        removeButton = new JButton("Удалить");
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -193,7 +201,7 @@ public class ConfigurationPage extends JFrame {
             }
         });
         tableButtonsPane.add(removeButton);
-        JButton editButton = new JButton("Редактировать");
+        editButton = new JButton("Редактировать");
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -234,6 +242,32 @@ public class ConfigurationPage extends JFrame {
             }
         });
         tableButtonsPane.add(editButton);
+        pauseButton = new JButton("Пауза");
+        pauseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if("Пауза".equals(pauseButton.getText())) {
+                    pauseButton.setText("Старт");
+                    chooseACTFileButton.setEnabled(false);
+                    table.setEnabled(false);
+                    addButton.setEnabled(false);
+                    removeButton.setEnabled(false);
+                    editButton.setEnabled(false);
+                    manager.pauseProcessingAutoFilling();
+                    manager.pauseProcessingExecutedAnswer();
+                } else {
+                    pauseButton.setText("Пауза");
+                    chooseACTFileButton.setEnabled(true);
+                    table.setEnabled(true);
+                    addButton.setEnabled(true);
+                    removeButton.setEnabled(true);
+                    editButton.setEnabled(true);
+                    manager.startProcessingAutoFilling();
+                    manager.startProcessingExecutedAnswer();
+                }
+            }
+        });
+        tableButtonsPane.add(pauseButton);
 
         Container contentPane = getContentPane();
         contentPane.add(actPane, BorderLayout.PAGE_START);
