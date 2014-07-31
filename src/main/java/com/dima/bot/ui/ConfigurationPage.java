@@ -255,6 +255,7 @@ public class ConfigurationPage extends JFrame {
                     editButton.setEnabled(false);
                     manager.pauseProcessingAutoFilling();
                     manager.pauseProcessingExecutedAnswer();
+                    manager.pauseTaskSender();
                 } else {
                     pauseButton.setText("Пауза");
                     chooseACTFileButton.setEnabled(true);
@@ -264,6 +265,7 @@ public class ConfigurationPage extends JFrame {
                     editButton.setEnabled(true);
                     manager.startProcessingAutoFilling();
                     manager.startProcessingExecutedAnswer();
+                    manager.startTaskSender();
                 }
             }
         });

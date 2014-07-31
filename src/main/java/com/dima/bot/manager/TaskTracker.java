@@ -3,10 +3,7 @@ package com.dima.bot.manager;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,7 +19,7 @@ public class TaskTracker {
     public TaskTracker(List<UrlWorker> workers) {
         if(workers != null) {
             for(UrlWorker worker : workers) {
-                autoFillTracks.put(worker, new ArrayList<NewAdvertisement>());
+                autoFillTracks.put(worker, new LinkedList<NewAdvertisement>());
             }
         }
     }
@@ -34,7 +31,7 @@ public class TaskTracker {
     public void addUrlWorkerTrack(UrlWorker urlWorker) {
         if(urlWorker != null) {
             if(!autoFillTracks.keySet().contains(urlWorker)) {
-                autoFillTracks.put(urlWorker,new ArrayList<NewAdvertisement>());
+                autoFillTracks.put(urlWorker,new LinkedList<NewAdvertisement>());
             }
         }
     }
@@ -54,7 +51,4 @@ public class TaskTracker {
         }
         return false;
     }
-
-
-
 }

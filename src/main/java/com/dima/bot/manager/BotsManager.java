@@ -27,6 +27,7 @@ public class BotsManager implements SettingsKeeper{
     private Map<UrlWorker, Date> dateOfLastExecutedAnswer = new HashMap<UrlWorker,Date>();
     private boolean processingExecutedAnswerEnable = true;
     private boolean pauseProcessingExecutedAnswer = false;
+    private boolean pauseTaskSender = true;
     private int repeatDetectorSec = 1200;
 
 
@@ -36,6 +37,28 @@ public class BotsManager implements SettingsKeeper{
 
         ExcelAutoFillUtil autoFillUtil = new ExcelAutoFillUtil();
         this.autoFillEntities = autoFillUtil.getEntities(getAutoCompleteTemplatesPath());
+    }
+
+    public boolean isPauseTaskSender() {
+        return pauseTaskSender;
+    }
+
+    public void setPauseTaskSender(boolean pauseTaskSender) {
+        this.pauseTaskSender = pauseTaskSender;
+    }
+
+    public void startTaskSender() {
+        if(isPauseTaskSender()) {
+            setPauseTaskSender(false);
+            for(UrlWorker worker : this.keeper.getUrlWorkers()) {
+                TaskSender sender = new TaskSender(worker,this);
+                ThreadManager.INSTANCE.execute(sender);
+            }
+        }
+    }
+
+    public void pauseTaskSender() {
+        setPauseTaskSender(true);
     }
 
     public boolean isAfterDateLastExecutedAnswer(UrlWorker worker, Date date) {
