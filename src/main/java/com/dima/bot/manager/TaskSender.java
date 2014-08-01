@@ -1,6 +1,14 @@
 package com.dima.bot.manager;
 
+import com.dima.bot.manager.model.Advertisement;
+import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+import java.util.List;
+import java.util.Random;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,7 +25,33 @@ public class TaskSender implements  Runnable {
     @Override
     public void run() {
         while(this.worker != null && this.manager.getUrlWorkers().contains(this.worker) && !this.manager.isPauseTaskSender()) {
+            List<NewAdvertisement> advertisements = manager.getTaskTracker().getAutoFillTrack(worker);
+            if(advertisements == null) {
+                break;
+            } else {
+                for(NewAdvertisement advertisement : advertisements) {
+                    WebDriver driver = new FirefoxDriver();
+                    driver.get(advertisement.getOpenURL());
+//                    driver.findElement(By.id("submit")).submit();
 
+                }
+            }
+
+            int minSec = worker.getMinSecTime();
+            int maxSec = worker.getMaxSecTime();
+            if(minSec <= 0) {
+                minSec = 1;
+            }
+            if(maxSec < minSec + 30) {
+                maxSec = minSec + 30;
+            }
+            Random rand = new Random();
+            int randomNum = rand.nextInt((maxSec - minSec) + 1) + minSec;
+            try {
+                Thread.sleep(randomNum*1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

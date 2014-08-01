@@ -216,7 +216,11 @@ public class BotsManager implements SettingsKeeper{
     @Override
     public String removeUrlWorker(UrlWorker urlWorker) {
         if(keeper != null) {
-            return keeper.removeUrlWorker(urlWorker);
+            String res = keeper.removeUrlWorker(urlWorker);
+            if(res != null) {
+                taskTracker.removeUrlWorkerTrack(urlWorker);
+            }
+            return res;
         }
         return null;
     }

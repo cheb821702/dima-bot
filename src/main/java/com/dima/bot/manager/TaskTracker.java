@@ -44,6 +44,7 @@ public class TaskTracker {
 
     public boolean addAutoFillTask(UrlWorker urlWorker, NewAdvertisement autoFillAdvertisement) {
         if(urlWorker != null || autoFillAdvertisement != null) {
+            addUrlWorkerTrack(urlWorker);
             List<NewAdvertisement> autoFillAdvertisements = autoFillTracks.get(urlWorker);
             if(autoFillAdvertisements != null) {
                 return autoFillAdvertisements.add(autoFillAdvertisement);
