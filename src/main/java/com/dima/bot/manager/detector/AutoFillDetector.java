@@ -49,7 +49,7 @@ public class AutoFillDetector implements Runnable{
                                         }
                                     }
                                     if(autoFillAdvertisement != null) {
-                                        manager.getTaskTracker().addAutoFillTask(worker,autoFillAdvertisement);
+                                        manager.getTaskTracker().addFirstAutoFillTask(worker, autoFillAdvertisement);
                                     }
                                 }
                             } else {

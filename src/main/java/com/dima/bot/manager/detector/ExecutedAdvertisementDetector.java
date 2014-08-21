@@ -48,7 +48,7 @@ public class ExecutedAdvertisementDetector implements Runnable {
                                             temp.setAutoYear(advertisement.getAutoYear());
                                             temp.setOpenURL(advertisement.getOpenURL());
                                             temp.setPerformed(advertisement.isPerformed());
-                                            manager.getTaskTracker().addAutoFillTask(worker, (NewAdvertisement) temp);
+                                            manager.getTaskTracker().addFirstAutoFillTask(worker, (NewAdvertisement) temp);
                                         }
                                     }
                                 }

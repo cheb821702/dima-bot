@@ -12,6 +12,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.text.PlainDocument;
 
 
 /**
@@ -31,6 +32,7 @@ public class ConfigurationPage extends JFrame {
     private JButton removeButton;
     private JButton editButton;
     private JButton pauseButton;
+    private JTextField timerField;
 
     public ConfigurationPage(BotsManager initManager){
         super("Staff Worker");
@@ -270,6 +272,9 @@ public class ConfigurationPage extends JFrame {
             }
         });
         tableButtonsPane.add(pauseButton);
+
+//        PlainDocument doc = (PlainDocument) timerField.getDocument();;
+//        doc.setDocumentFilter(new );
 
         Container contentPane = getContentPane();
         contentPane.add(actPane, BorderLayout.PAGE_START);

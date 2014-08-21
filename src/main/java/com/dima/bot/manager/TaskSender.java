@@ -25,16 +25,16 @@ public class TaskSender implements  Runnable {
     @Override
     public void run() {
         while(this.worker != null && this.manager.getUrlWorkers().contains(this.worker) && !this.manager.isPauseTaskSender()) {
-            List<NewAdvertisement> advertisements = manager.getTaskTracker().getAutoFillTrack(worker);
-            if(advertisements == null) {
+            NewAdvertisement advertisement = manager.getTaskTracker().getLastAutoFillTask(worker);
+            if(advertisement == null) {
                 break;
             } else {
-                for(NewAdvertisement advertisement : advertisements) {
-                    WebDriver driver = new FirefoxDriver();
-                    driver.get(advertisement.getOpenURL());
-//                    driver.findElement(By.id("submit")).submit();
+                WebDriver driver = new FirefoxDriver();
+                driver.get(advertisement.getOpenURL());
+//              driver.findElement(By.id("submit")).submit();
 
-                }
+
+//                manager.getTaskTracker().removeAutoFillTask(worker,advertisement);
             }
 
             int minSec = worker.getMinSecTime();

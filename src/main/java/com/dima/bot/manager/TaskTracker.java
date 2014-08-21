@@ -42,12 +42,31 @@ public class TaskTracker {
         }
     }
 
-    public boolean addAutoFillTask(UrlWorker urlWorker, NewAdvertisement autoFillAdvertisement) {
+    public void addFirstAutoFillTask(UrlWorker urlWorker, NewAdvertisement autoFillAdvertisement) {
         if(urlWorker != null || autoFillAdvertisement != null) {
             addUrlWorkerTrack(urlWorker);
-            List<NewAdvertisement> autoFillAdvertisements = autoFillTracks.get(urlWorker);
+            LinkedList<NewAdvertisement> autoFillAdvertisements = (LinkedList<NewAdvertisement>) autoFillTracks.get(urlWorker);
             if(autoFillAdvertisements != null) {
-                return autoFillAdvertisements.add(autoFillAdvertisement);
+                autoFillAdvertisements.addFirst(autoFillAdvertisement);
+            }
+        }
+    }
+
+    public NewAdvertisement getLastAutoFillTask(UrlWorker urlWorker) {
+        if(urlWorker != null) {
+            LinkedList<NewAdvertisement> autoFillAdvertisements = (LinkedList<NewAdvertisement>) autoFillTracks.get(urlWorker);
+            if(autoFillAdvertisements != null && !autoFillAdvertisements.isEmpty()) {
+                return autoFillAdvertisements.getLast();
+            }
+        }
+        return null;
+    }
+
+    public boolean removeAutoFillTask(UrlWorker urlWorker, NewAdvertisement autoFillAdvertisement) {
+        if(urlWorker != null || autoFillAdvertisement != null) {
+            LinkedList<NewAdvertisement> autoFillAdvertisements = (LinkedList<NewAdvertisement>) autoFillTracks.get(urlWorker);
+            if(autoFillAdvertisements != null) {
+                return autoFillAdvertisements.remove(autoFillAdvertisement);
             }
         }
         return false;
