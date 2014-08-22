@@ -59,6 +59,7 @@ public class IntFilter extends DocumentFilter{
     @Override
     public void remove(FilterBypass fb, int offset, int length)
             throws BadLocationException {
+
         Document doc = fb.getDocument();
         StringBuilder sb = new StringBuilder();
         sb.append(doc.getText(0, doc.getLength()));

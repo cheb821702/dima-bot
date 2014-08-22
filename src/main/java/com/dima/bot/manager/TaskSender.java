@@ -31,7 +31,8 @@ public class TaskSender implements  Runnable {
             } else {
                 WebDriver driver = new FirefoxDriver();
                 driver.get(advertisement.getOpenURL());
-//              driver.findElement(By.id("submit")).submit();
+
+                driver.findElement(By.id("submit")).submit();
 
 
 //                manager.getTaskTracker().removeAutoFillTask(worker,advertisement);

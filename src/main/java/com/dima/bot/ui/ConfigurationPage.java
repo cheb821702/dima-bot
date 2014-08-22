@@ -3,6 +3,7 @@ package com.dima.bot.ui;
 import com.dima.bot.manager.BotsManager;
 import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.model.UrlWorker;
+import com.dima.bot.ui.component.IntFilter;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
@@ -10,8 +11,11 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
 
@@ -250,21 +254,23 @@ public class ConfigurationPage extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if("Пауза".equals(pauseButton.getText())) {
                     pauseButton.setText("Старт");
-                    chooseACTFileButton.setEnabled(false);
-                    table.setEnabled(false);
-                    addButton.setEnabled(false);
-                    removeButton.setEnabled(false);
-                    editButton.setEnabled(false);
-                    manager.pauseProcessingAutoFilling();
-                    manager.pauseProcessingExecutedAnswer();
-                    manager.pauseTaskSender();
-                } else {
-                    pauseButton.setText("Пауза");
                     chooseACTFileButton.setEnabled(true);
                     table.setEnabled(true);
                     addButton.setEnabled(true);
                     removeButton.setEnabled(true);
                     editButton.setEnabled(true);
+                    timerField.setEnabled(true);
+                    manager.pauseProcessingAutoFilling();
+                    manager.pauseProcessingExecutedAnswer();
+                    manager.pauseTaskSender();
+                } else {
+                    pauseButton.setText("Пауза");
+                    chooseACTFileButton.setEnabled(false);
+                    table.setEnabled(false);
+                    addButton.setEnabled(false);
+                    removeButton.setEnabled(false);
+                    editButton.setEnabled(false);
+                    timerField.setEnabled(false);
                     manager.startProcessingAutoFilling();
                     manager.startProcessingExecutedAnswer();
                     manager.startTaskSender();
@@ -273,8 +279,47 @@ public class ConfigurationPage extends JFrame {
         });
         tableButtonsPane.add(pauseButton);
 
-//        PlainDocument doc = (PlainDocument) timerField.getDocument();;
-//        doc.setDocumentFilter(new );
+        tableButtonsPane.add(new JLabel("Время обновления:"));
+
+        timerField = new JTextField(Integer.toString(manager.getRepeatDetectorSec()));
+        final PlainDocument doc = (PlainDocument) timerField.getDocument();
+        doc.setDocumentFilter(new IntFilter());
+        doc.addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                try {
+                    int sec  = Integer.parseInt(doc.getText(0,doc.getLength()));
+                    manager.setRepeatDetectorSec(sec);
+                } catch (Exception ex) {
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                try {
+                    int sec  = Integer.parseInt(doc.getText(0,doc.getLength()));
+                    manager.setRepeatDetectorSec(sec);
+                } catch (Exception ex) {
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                try {
+                    int sec  = Integer.parseInt(doc.getText(0,doc.getLength()));
+                    manager.setRepeatDetectorSec(sec);
+                } catch (Exception ex) {
+                }
+            }
+        });
+        tableButtonsPane.add(timerField);
+
+        chooseACTFileButton.setEnabled(false);
+        table.setEnabled(false);
+        addButton.setEnabled(false);
+        removeButton.setEnabled(false);
+        editButton.setEnabled(false);
+        timerField.setEnabled(false);
 
         Container contentPane = getContentPane();
         contentPane.add(actPane, BorderLayout.PAGE_START);
@@ -283,7 +328,7 @@ public class ConfigurationPage extends JFrame {
 
 
         setVisible(true);
-        setSize(500, 300);
+        setSize(550, 300);
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
