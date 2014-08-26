@@ -4,9 +4,13 @@ import com.dima.bot.manager.model.Advertisement;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -32,10 +36,54 @@ public class TaskSender implements  Runnable {
                 WebDriver driver = new FirefoxDriver();
                 driver.get(advertisement.getOpenURL());
 
-                driver.findElement(By.id("submit")).submit();
+                List<String> answeredDetails = new ArrayList<String>();
 
+                try {
+                    List<WebElement> trs = driver.findElements(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody/tr"));
+                    String answerText = null;
+                    for(WebElement child : trs) {
+                        if(child.getText().contains("До этого Вы ответили:")) {
+                            answerText = child.findElement(By.xpath("./td[2]")).getText();
+                            break;
+                        }
+                    }
 
-//                manager.getTaskTracker().removeAutoFillTask(worker,advertisement);
+                    List<String> zaprosi = new LinkedList<>();
+                    String numberstr = null;
+                    boolean marker = false;
+                    for(WebElement child : trs) {
+                        String className= child.getAttribute("class");
+                        if(className.contains("inputs-")) {
+                            if(!className.equals(numberstr)) {
+                                numberstr = className;
+                                marker = true;
+                            }
+                            if(marker) {
+                                WebElement textarea = child.findElement(By.xpath("./td/textarea"));
+                                if(textarea.getAttribute("name").contains("zapros-")) {
+                                    zaprosi.add(textarea.getText().trim());
+                                    marker = false;
+                                }
+                            }
+                        }
+                    }
+
+                    for(String zapros : zaprosi) {
+                        int pos = answerText.indexOf(zapros);
+                        while(pos > 0) {
+                            if(answerText.substring(pos + zapros.length(),answerText.indexOf(' ',pos + zapros.length()+1)).trim().matches("[0-9]+")) {
+                                answeredDetails.add(zapros);
+                            } else {
+                                pos = answerText.indexOf(zapros);
+                            }
+                        }
+                    }
+                } catch (NoSuchElementException e) {
+
+                }
+
+                manager.getTaskTracker().removeAutoFillTask(worker,advertisement);
+                driver.close();
             }
 
             int minSec = worker.getMinSecTime();
