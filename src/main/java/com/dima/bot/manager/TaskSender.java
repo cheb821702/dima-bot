@@ -1,18 +1,17 @@
 package com.dima.bot.manager;
 
-import com.dima.bot.manager.model.Advertisement;
+import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.model.NewAdvertisement;
+import com.dima.bot.manager.util.ExcelAutoFillUtil;
 import com.dima.bot.settings.model.UrlWorker;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.Select;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -48,36 +47,80 @@ public class TaskSender implements  Runnable {
                         }
                     }
 
-                    List<String> zaprosi = new LinkedList<>();
-                    String numberstr = null;
-                    boolean marker = false;
-                    for(WebElement child : trs) {
-                        String className= child.getAttribute("class");
-                        if(className.contains("inputs-")) {
-                            if(!className.equals(numberstr)) {
-                                numberstr = className;
-                                marker = true;
+                    if(answerText != null) {
+                        List<String> zaprosi = new LinkedList<>();
+                        String numberstr = null;
+                        boolean marker = false;
+                        for(WebElement child : trs) {
+                            String className= child.getAttribute("class");
+                            if(className.contains("inputs-")) {
+                                if(!className.equals(numberstr)) {
+                                    numberstr = className;
+                                    marker = true;
+                                }
+                                if(marker) {
+                                    WebElement textarea = child.findElement(By.xpath("./td/textarea"));
+                                    if(textarea.getAttribute("name").contains("zapros-")) {
+                                        zaprosi.add(textarea.getText().trim());
+                                        marker = false;
+                                    }
+                                }
                             }
-                            if(marker) {
-                                WebElement textarea = child.findElement(By.xpath("./td/textarea"));
-                                if(textarea.getAttribute("name").contains("zapros-")) {
-                                    zaprosi.add(textarea.getText().trim());
-                                    marker = false;
+                        }
+
+                        for(String zapros : zaprosi) {
+                            int pos = answerText.indexOf(zapros);
+                            while(pos > 0) {
+                                if(answerText.substring(pos + zapros.length(),answerText.indexOf(' ',pos + zapros.length()+1)).trim().matches("[0-9]+")) {
+                                    answeredDetails.add(zapros);
+                                } else {
+                                    pos = answerText.indexOf(zapros);
                                 }
                             }
                         }
                     }
+                } catch (NoSuchElementException e) {
 
-                    for(String zapros : zaprosi) {
-                        int pos = answerText.indexOf(zapros);
-                        while(pos > 0) {
-                            if(answerText.substring(pos + zapros.length(),answerText.indexOf(' ',pos + zapros.length()+1)).trim().matches("[0-9]+")) {
-                                answeredDetails.add(zapros);
-                            } else {
-                                pos = answerText.indexOf(zapros);
+                }
+
+                try {
+                    WebElement tbody = driver.findElement(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody"));
+                    for(int i = 1; i < 100; i++) {
+                        try {
+                            WebElement zapros = tbody.findElement(By.name("zapros-" + Integer.toString(i)));
+                            String text = zapros.getText();
+                            if(!answeredDetails.contains(text)) {
+                                if(advertisement.getAutoFillDetailsMap().containsKey(text)){
+                                    AutoFillEntity entity = advertisement.getAutoFillDetailsMap().get(text);
+                                    WebElement price = tbody.findElement(By.name("price-" + Integer.toString(i) + "-1"));
+                                    price.sendKeys(Integer.toString(entity.getCost()));
+
+                                    Select nalichieBox = new Select(tbody.findElement(By.name("nalichie-" + Integer.toString(i) + "-1")));
+                                    String nalichie = entity.getDeliveryTime();
+                                    for(Map.Entry entry: ExcelAutoFillUtil.getDeliveryTimeList().entrySet()) {
+                                        if(nalichie.equals(entry.getValue())) {
+                                            nalichieBox.deselectAll();
+                                            nalichieBox.selectByIndex((Integer) entry.getKey());
+                                            break;
+                                        }
+                                    }
+
+                                    Select sostoyanieBox = new Select(tbody.findElement(By.name("sostoyanie-" + Integer.toString(i) + "-1")));
+                                    String sostoyanie = entity.getState();
+                                    for(Map.Entry entry: ExcelAutoFillUtil.getStateList().entrySet()) {
+                                        if(sostoyanie.equals(entry.getValue())) {
+                                            sostoyanieBox.deselectAll();
+                                            sostoyanieBox.selectByIndex((Integer) entry.getKey());
+                                            break;
+                                        }
+                                    }
+                                }
                             }
+                        } catch (NoSuchElementException e) {
+                              break;
                         }
                     }
+                    driver.findElement(By.name("submit")).submit();
                 } catch (NoSuchElementException e) {
 
                 }
