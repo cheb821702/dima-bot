@@ -3,6 +3,7 @@ package com.dima.bot.manager;
 import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.manager.util.ExcelAutoFillUtil;
+import com.dima.bot.manager.util.FerioDataOnPageUtil;
 import com.dima.bot.settings.model.UrlWorker;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -73,6 +74,7 @@ public class TaskSender implements  Runnable {
                             while(pos > 0) {
                                 if(answerText.substring(pos + zapros.length(),answerText.indexOf(' ',pos + zapros.length()+1)).trim().matches("[0-9]+")) {
                                     answeredDetails.add(zapros);
+                                    break;
                                 } else {
                                     pos = answerText.indexOf(zapros);
                                 }
@@ -87,6 +89,15 @@ public class TaskSender implements  Runnable {
                     WebElement tbody = driver.findElement(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody"));
                     for(int i = 1; i < 100; i++) {
                         try {
+                            String nomberText = null;
+                            try {
+                                WebElement nomber = tbody.findElement(By.name("nomber-" + Integer.toString(i)));
+                                nomberText = nomber.getAttribute("value");
+                            } catch (NoSuchElementException e) {
+                            }
+
+                            // номер в скобочках
+
                             WebElement zapros = tbody.findElement(By.name("zapros-" + Integer.toString(i)));
                             String text = zapros.getText();
                             if(!answeredDetails.contains(text)) {
@@ -97,20 +108,18 @@ public class TaskSender implements  Runnable {
 
                                     Select nalichieBox = new Select(tbody.findElement(By.name("nalichie-" + Integer.toString(i) + "-1")));
                                     String nalichie = entity.getDeliveryTime();
-                                    for(Map.Entry entry: ExcelAutoFillUtil.getDeliveryTimeList().entrySet()) {
+                                    for(Map.Entry entry: FerioDataOnPageUtil.getDeliveryTimeList().entrySet()) {
                                         if(nalichie.equals(entry.getValue())) {
-                                            nalichieBox.deselectAll();
-                                            nalichieBox.selectByIndex((Integer) entry.getKey());
+                                            nalichieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
                                             break;
                                         }
                                     }
 
                                     Select sostoyanieBox = new Select(tbody.findElement(By.name("sostoyanie-" + Integer.toString(i) + "-1")));
                                     String sostoyanie = entity.getState();
-                                    for(Map.Entry entry: ExcelAutoFillUtil.getStateList().entrySet()) {
+                                    for(Map.Entry entry: FerioDataOnPageUtil.getStateList().entrySet()) {
                                         if(sostoyanie.equals(entry.getValue())) {
-                                            sostoyanieBox.deselectAll();
-                                            sostoyanieBox.selectByIndex((Integer) entry.getKey());
+                                            sostoyanieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
                                             break;
                                         }
                                     }
@@ -120,7 +129,7 @@ public class TaskSender implements  Runnable {
                               break;
                         }
                     }
-                    driver.findElement(By.name("submit")).submit();
+//                    driver.findElement(By.name("submit")).submit();
                 } catch (NoSuchElementException e) {
 
                 }
