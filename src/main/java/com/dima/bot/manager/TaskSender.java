@@ -2,7 +2,6 @@ package com.dima.bot.manager;
 
 import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.model.NewAdvertisement;
-import com.dima.bot.manager.util.ExcelAutoFillUtil;
 import com.dima.bot.manager.util.FerioDataOnPageUtil;
 import com.dima.bot.settings.model.UrlWorker;
 import org.openqa.selenium.By;
@@ -36,8 +35,8 @@ public class TaskSender implements  Runnable {
                 WebDriver driver = new FirefoxDriver();
                 driver.get(advertisement.getOpenURL());
 
+                // поиск уже отвеченных деталей
                 List<String> answeredDetails = new ArrayList<String>();
-
                 try {
                     List<WebElement> trs = driver.findElements(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody/tr"));
                     String answerText = null;
@@ -85,10 +84,12 @@ public class TaskSender implements  Runnable {
 
                 }
 
+                // заполнеие формы запроса
                 try {
                     WebElement tbody = driver.findElement(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody"));
                     for(int i = 1; i < 100; i++) {
                         try {
+                            // поиск ориг. номера детали
                             String nomberText = null;
                             try {
                                 WebElement nomber = tbody.findElement(By.name("nomber-" + Integer.toString(i)));
@@ -96,18 +97,31 @@ public class TaskSender implements  Runnable {
                             } catch (NoSuchElementException e) {
                             }
 
-                            // номер в скобочках
-
+                            // выбор детали на форме
                             WebElement zapros = tbody.findElement(By.name("zapros-" + Integer.toString(i)));
-                            String text = zapros.getText();
-                            if(!answeredDetails.contains(text)) {
-                                if(advertisement.getAutoFillDetailsMap().containsKey(text)){
-                                    AutoFillEntity entity = advertisement.getAutoFillDetailsMap().get(text);
+                            String zaprosText = zapros.getText();
+                            if(!zaprosText.isEmpty() && !answeredDetails.contains(zaprosText)) {
+
+                                // поиск заполняемой информации о детали
+                                AutoFillEntity detailEntity = null;
+                                if(nomberText != null && !nomberText.isEmpty() ) {
+                                    for (Map.Entry<String,AutoFillEntity> detailEntry: advertisement.getAutoFillDetailsMap().entrySet()) {
+                                        if(detailEntry.getKey().startsWith(zaprosText) && zaprosText.equals(detailEntry.getKey().replace('(' + nomberText + ')', "").trim())) {
+                                            detailEntity = detailEntry.getValue();
+                                        }
+                                    }
+                                } else if(advertisement.getAutoFillDetailsMap().containsKey(zaprosText)) {
+                                    detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
+                                }
+
+                                // заполнение формы детали информацией (примечание!!!!!)
+                                if(detailEntity != null) {
+                                    detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
                                     WebElement price = tbody.findElement(By.name("price-" + Integer.toString(i) + "-1"));
-                                    price.sendKeys(Integer.toString(entity.getCost()));
+                                    price.sendKeys(Integer.toString(detailEntity.getCost()));
 
                                     Select nalichieBox = new Select(tbody.findElement(By.name("nalichie-" + Integer.toString(i) + "-1")));
-                                    String nalichie = entity.getDeliveryTime();
+                                    String nalichie = detailEntity.getDeliveryTime();
                                     for(Map.Entry entry: FerioDataOnPageUtil.getDeliveryTimeList().entrySet()) {
                                         if(nalichie.equals(entry.getValue())) {
                                             nalichieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
@@ -116,12 +130,17 @@ public class TaskSender implements  Runnable {
                                     }
 
                                     Select sostoyanieBox = new Select(tbody.findElement(By.name("sostoyanie-" + Integer.toString(i) + "-1")));
-                                    String sostoyanie = entity.getState();
+                                    String sostoyanie = detailEntity.getState();
                                     for(Map.Entry entry: FerioDataOnPageUtil.getStateList().entrySet()) {
                                         if(sostoyanie.equals(entry.getValue())) {
                                             sostoyanieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
                                             break;
                                         }
+                                    }
+
+                                    if(!zaprosText.equals(detailEntity.getDetail())) {
+                                        WebElement rubric = tbody.findElement(By.name("rubric-" + Integer.toString(i) + "-1"));
+                                        rubric.sendKeys(detailEntity.getDetail());
                                     }
                                 }
                             }
@@ -138,6 +157,7 @@ public class TaskSender implements  Runnable {
                 driver.close();
             }
 
+            // выставление задержки
             int minSec = worker.getMinSecTime();
             int maxSec = worker.getMaxSecTime();
             if(minSec <= 0) {
