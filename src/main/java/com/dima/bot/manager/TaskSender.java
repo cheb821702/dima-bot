@@ -138,7 +138,7 @@ public class TaskSender implements  Runnable {
                                         }
                                     }
 
-                                    if(!zaprosText.equals(detailEntity.getDetail())) {
+                                    if(detailEntity.getDetail() != null && !zaprosText.equals(detailEntity.getDetail())) {
                                         WebElement rubric = tbody.findElement(By.name("rubric-" + Integer.toString(i) + "-1"));
                                         rubric.sendKeys(detailEntity.getDetail());
                                     }

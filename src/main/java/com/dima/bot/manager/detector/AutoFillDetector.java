@@ -35,19 +35,7 @@ public class AutoFillDetector implements Runnable{
                         for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
                             if(checkDate(worker, advertisement.getDate())) {
                                 if(!advertisement.isPerformed()) {
-                                    NewAdvertisement autoFillAdvertisement = null;
-                                    for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
-                                        if(checkAuto(advertisement, autoFillEntity)) {
-                                            for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
-                                                if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
-                                                    if(autoFillAdvertisement == null) {
-                                                        autoFillAdvertisement = new NewAdvertisement(advertisement);
-                                                    }
-                                                    autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
-                                                }
-                                            }
-                                        }
-                                    }
+                                    NewAdvertisement autoFillAdvertisement = getNewAdvertisement(advertisement);
                                     if(autoFillAdvertisement != null) {
                                         manager.getTaskTracker().addFirstAutoFillTask(worker, autoFillAdvertisement);
                                     }
@@ -72,6 +60,23 @@ public class AutoFillDetector implements Runnable{
         manager.finishAutoFillDetector();
     }
 
+    public NewAdvertisement getNewAdvertisement(Advertisement advertisement) {
+        NewAdvertisement autoFillAdvertisement = null;
+        for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
+            if(checkAuto(advertisement, autoFillEntity)) {
+                for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
+                    if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
+                        if(autoFillAdvertisement == null) {
+                            autoFillAdvertisement = new NewAdvertisement(advertisement);
+                        }
+                        autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
+                    }
+                }
+            }
+        }
+        return  autoFillAdvertisement;
+    }
+
     private boolean checkDate(UrlWorker worker, Date date) {
         if (date != null) {
             if(lastDate == null || date.after(lastDate)) {
@@ -81,7 +86,7 @@ public class AutoFillDetector implements Runnable{
         return manager.isAfterDateLastAutoFill(worker, date);
     }
 
-    private boolean checkDetail(String  advertisementDetail, String  autoFillEntityDetail) {
+    public static boolean checkDetail(String  advertisementDetail, String  autoFillEntityDetail) {
         boolean confirmDetail = true;
         advertisementDetail = advertisementDetail.toLowerCase();
         for(String wordAutoFill : autoFillEntityDetail.toLowerCase().split("\\s+")) {
@@ -101,7 +106,7 @@ public class AutoFillDetector implements Runnable{
         return confirmDetail;
     }
 
-    private boolean checkAuto(Advertisement advertisement, AutoFillEntity autoFillEntity) {
+    public static boolean checkAuto(Advertisement advertisement, AutoFillEntity autoFillEntity) {
         if(autoFillEntity.getStartYear() == null || autoFillEntity.getStartYear() <= advertisement.getAutoYear() ) {
             if(autoFillEntity.getStopYear() == null || autoFillEntity.getStopYear() >= advertisement.getAutoYear() ) {
                 String auto = advertisement.getAuto().trim().toLowerCase();

@@ -3,12 +3,14 @@ package com.dima.bot.manager.detector;
 import com.dima.bot.manager.executor.AdvertisementExtractor;
 import com.dima.bot.manager.model.Advertisement;
 import com.dima.bot.manager.BotsManager;
+import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.util.URLUtil;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,15 +31,37 @@ public class ExecutedAdvertisementDetector implements Runnable {
     @Override
     public void run() {
         while(!manager.isPauseProcessingExecutedAnswer()) {
-            for(int workindex = 0; workindex < manager.getKeeper().getUrlWorkers().size() && !manager.isPauseProcessingExecutedAnswer(); workindex++  ) {
+            List<UrlWorker> workers = manager.getKeeper().getUrlWorkers();
+            for(int workindex = 0; workindex < workers.size() && !manager.isPauseProcessingExecutedAnswer(); workindex++  ) {
                 UrlWorker worker = manager.getKeeper().getUrlWorkers().get(workindex);
                 AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
+                //worker.isSeniorStatus()
                 if(extractor != null) {
                     for(int i = 1; i <= extractor.getMaxNPage(); i++) {
                         boolean isBreak = false;
                         for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
                             if(checkDate(worker, advertisement.getDate())) {
                                 if(advertisement.isPerformed()) {
+
+
+//                                    for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
+//                                        if(AutoFillDetector.checkAuto(advertisement, autoFillEntity)) {
+//                                            for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
+//                                                if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
+//                                                    if(autoFillAdvertisement == null) {
+//                                                        autoFillAdvertisement = new NewAdvertisement(advertisement);
+//                                                    }
+//                                                    autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+
+
+
+
+
+
                                     AdvertisementExtractor answerExtractor = manager.factoryAdvertisementExtractor(advertisement.getOpenURL());
                                     if(answerExtractor != null) {
                                         List<Advertisement> answers = answerExtractor.extract (advertisement.getOpenURL());
@@ -80,4 +104,5 @@ public class ExecutedAdvertisementDetector implements Runnable {
         }
         return manager.isAfterDateLastExecutedAnswer(worker, date);
     }
+
 }
