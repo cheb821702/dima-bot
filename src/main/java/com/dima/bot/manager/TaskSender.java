@@ -1,9 +1,11 @@
 package com.dima.bot.manager;
 
+import com.dima.bot.manager.detector.AutoFillDetector;
 import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.manager.util.FerioDataOnPageUtil;
 import com.dima.bot.settings.model.UrlWorker;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -29,6 +31,7 @@ public class TaskSender implements  Runnable {
     public void run() {
         while(this.worker != null && this.manager.getUrlWorkers().contains(this.worker) && !this.manager.isPauseTaskSender()) {
             NewAdvertisement advertisement = manager.getTaskTracker().getLastAutoFillTask(worker);
+            boolean isSkippedAdvertisement = true;
             if(advertisement == null) {
                 break;
             } else {
@@ -87,6 +90,7 @@ public class TaskSender implements  Runnable {
                 // заполнеие формы запроса
                 try {
                     WebElement tbody = driver.findElement(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody"));
+
                     for(int i = 1; i < 100; i++) {
                         try {
                             // поиск ориг. номера детали
@@ -114,33 +118,50 @@ public class TaskSender implements  Runnable {
                                     detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
                                 }
 
-                                // заполнение формы детали информацией (примечание!!!!!)
+                                // заполнение формы детали информацией
                                 if(detailEntity != null) {
-                                    detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
-                                    WebElement price = tbody.findElement(By.name("price-" + Integer.toString(i) + "-1"));
-                                    price.sendKeys(Integer.toString(detailEntity.getCost()));
 
-                                    Select nalichieBox = new Select(tbody.findElement(By.name("nalichie-" + Integer.toString(i) + "-1")));
-                                    String nalichie = detailEntity.getDeliveryTime();
-                                    for(Map.Entry entry: FerioDataOnPageUtil.getDeliveryTimeList().entrySet()) {
-                                        if(nalichie.equals(entry.getValue())) {
-                                            nalichieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
-                                            break;
+                                    // поиск деталей в списке автоответов\
+                                    boolean isAutoAnswerDetail = false;
+                                    for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
+                                        if(AutoFillDetector.checkAuto(advertisement, autoFillEntity)) {
+                                            for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
+                                                if(AutoFillDetector.checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
+                                                    isAutoAnswerDetail = true;
+                                                }
+                                            }
                                         }
                                     }
 
-                                    Select sostoyanieBox = new Select(tbody.findElement(By.name("sostoyanie-" + Integer.toString(i) + "-1")));
-                                    String sostoyanie = detailEntity.getState();
-                                    for(Map.Entry entry: FerioDataOnPageUtil.getStateList().entrySet()) {
-                                        if(sostoyanie.equals(entry.getValue())) {
-                                            sostoyanieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
-                                            break;
-                                        }
-                                    }
+                                    if(!isAutoAnswerDetail) {
+                                        isSkippedAdvertisement = false;
 
-                                    if(detailEntity.getDetail() != null && !zaprosText.equals(detailEntity.getDetail())) {
-                                        WebElement rubric = tbody.findElement(By.name("rubric-" + Integer.toString(i) + "-1"));
-                                        rubric.sendKeys(detailEntity.getDetail());
+                                        detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
+                                        WebElement price = tbody.findElement(By.name("price-" + Integer.toString(i) + "-1"));
+                                        price.sendKeys(Integer.toString(detailEntity.getCost()));
+
+                                        Select nalichieBox = new Select(tbody.findElement(By.name("nalichie-" + Integer.toString(i) + "-1")));
+                                        String nalichie = detailEntity.getDeliveryTime();
+                                        for(Map.Entry entry: FerioDataOnPageUtil.getDeliveryTimeList().entrySet()) {
+                                            if(nalichie.equals(entry.getValue())) {
+                                                nalichieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
+                                                break;
+                                            }
+                                        }
+
+                                        Select sostoyanieBox = new Select(tbody.findElement(By.name("sostoyanie-" + Integer.toString(i) + "-1")));
+                                        String sostoyanie = detailEntity.getState();
+                                        for(Map.Entry entry: FerioDataOnPageUtil.getStateList().entrySet()) {
+                                            if(sostoyanie.equals(entry.getValue())) {
+                                                sostoyanieBox.selectByValue(Integer.toString((Integer) entry.getKey()));
+                                                break;
+                                            }
+                                        }
+
+                                        if(detailEntity.getDetail() != null && !zaprosText.equals(detailEntity.getDetail())) {
+                                            WebElement rubric = tbody.findElement(By.name("rubric-" + Integer.toString(i) + "-1"));
+                                            rubric.sendKeys(detailEntity.getDetail());
+                                        }
                                     }
                                 }
                             }
@@ -148,7 +169,9 @@ public class TaskSender implements  Runnable {
                               break;
                         }
                     }
+                    if(!isSkippedAdvertisement) {
 //                    driver.findElement(By.name("submit")).submit();
+                    }
                 } catch (NoSuchElementException e) {
 
                 }
@@ -157,21 +180,23 @@ public class TaskSender implements  Runnable {
                 driver.close();
             }
 
-            // выставление задержки
-            int minSec = worker.getMinSecTime();
-            int maxSec = worker.getMaxSecTime();
-            if(minSec <= 0) {
-                minSec = 1;
-            }
-            if(maxSec < minSec + 30) {
-                maxSec = minSec + 30;
-            }
-            Random rand = new Random();
-            int randomNum = rand.nextInt((maxSec - minSec) + 1) + minSec;
-            try {
-                Thread.sleep(randomNum*1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if(!isSkippedAdvertisement) {
+                // выставление задержки
+                int minSec = worker.getMinSecTime();
+                int maxSec = worker.getMaxSecTime();
+                if(minSec <= 0) {
+                    minSec = 1;
+                }
+                if(maxSec < minSec + 30) {
+                    maxSec = minSec + 30;
+                }
+                Random rand = new Random();
+                int randomNum = rand.nextInt((maxSec - minSec) + 1) + minSec;
+                try {
+                    Thread.sleep(randomNum*1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

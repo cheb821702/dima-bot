@@ -7,10 +7,9 @@ import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.util.URLUtil;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,7 +21,6 @@ import java.util.Map;
 public class ExecutedAdvertisementDetector implements Runnable {
 
     private BotsManager manager;
-    private Date lastDate = null;
 
     public ExecutedAdvertisementDetector(BotsManager manager) {
         this.manager = manager;
@@ -40,27 +38,9 @@ public class ExecutedAdvertisementDetector implements Runnable {
                     for(int i = 1; i <= extractor.getMaxNPage(); i++) {
                         boolean isBreak = false;
                         for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
-                            if(checkDate(worker, advertisement.getDate())) {
+                            if(!manager.getCashExecutedAnswer(worker).contains(advertisement.getNumber())) {
                                 if(advertisement.isPerformed()) {
-
-
-//                                    for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
-//                                        if(AutoFillDetector.checkAuto(advertisement, autoFillEntity)) {
-//                                            for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
-//                                                if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
-//                                                    if(autoFillAdvertisement == null) {
-//                                                        autoFillAdvertisement = new NewAdvertisement(advertisement);
-//                                                    }
-//                                                    autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-
-
-
-
-
+                                    // разослать всем openURL
 
                                     AdvertisementExtractor answerExtractor = manager.factoryAdvertisementExtractor(advertisement.getOpenURL());
                                     if(answerExtractor != null) {
@@ -85,10 +65,10 @@ public class ExecutedAdvertisementDetector implements Runnable {
                         }
                     }
                 }
-                manager.setDateOfLastExecutedAnswer(worker, lastDate);
+//                manager.setDateOfLastExecutedAnswer(worker, lastDate);
             }
             try {
-                Thread.sleep(manager.getRepeatDetectorSec());
+                Thread.sleep(manager.getRepeatDetectorSec()*1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -96,13 +76,12 @@ public class ExecutedAdvertisementDetector implements Runnable {
         manager.finishExecutedAdvertisementDetector();
     }
 
-    private boolean checkDate(UrlWorker worker, Date date) {
-        if (date != null) {
-            if(lastDate == null || date.after(lastDate)) {
-                lastDate = date;
-            }
-        }
-        return manager.isAfterDateLastExecutedAnswer(worker, date);
-    }
-
+//    private boolean checkDate(UrlWorker worker, Date date) {
+//        if (date != null) {
+//            if(lastDate == null || date.after(lastDate)) {
+//                lastDate = date;
+//            }
+//        }
+//        return manager.isAfterDateLastExecutedAnswer(worker, date);
+//    }
 }

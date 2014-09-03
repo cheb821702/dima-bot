@@ -34,7 +34,7 @@ public class AutoFillDetector implements Runnable{
                         boolean isBreak = false;
                         for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
                             if(checkDate(worker, advertisement.getDate())) {
-                                if(!advertisement.isPerformed()) {
+                                if(!advertisement.isPerformed()) {                // не обрабатывать уже отвеченные
                                     NewAdvertisement autoFillAdvertisement = getNewAdvertisement(advertisement);
                                     if(autoFillAdvertisement != null) {
                                         manager.getTaskTracker().addFirstAutoFillTask(worker, autoFillAdvertisement);
@@ -52,7 +52,7 @@ public class AutoFillDetector implements Runnable{
                 manager.setDateOfLastAutoFill(worker, lastDate);
             }
             try {
-                Thread.sleep(manager.getRepeatDetectorSec());
+                Thread.sleep(manager.getRepeatDetectorSec()*1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

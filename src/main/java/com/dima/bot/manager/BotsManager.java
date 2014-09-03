@@ -8,10 +8,10 @@ import com.dima.bot.manager.util.ExcelAutoFillUtil;
 import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
 
 /**
  * User: CHEB
@@ -24,7 +24,10 @@ public class BotsManager implements SettingsKeeper{
     private Map<UrlWorker, Date> dateOfLastAutoFill = new HashMap<UrlWorker,Date>();
     private boolean processingAutoFillingEnable = true;
     private boolean pauseProcessingAutoFilling = false;
-    private Map<UrlWorker, Date> dateOfLastExecutedAnswer = new HashMap<UrlWorker,Date>();
+
+    private Map<UrlWorker, CircularFifoQueue<Long>> cashExecutedAnswer = new HashMap<UrlWorker, CircularFifoQueue<Long>>();
+    private int cashExecutedAnswerSize = 200;
+//    private Map<UrlWorker, Date> dateOfLastExecutedAnswer = new HashMap<UrlWorker,Date>();
     private boolean processingExecutedAnswerEnable = true;
     private boolean pauseProcessingExecutedAnswer = false;
     private boolean pauseTaskSender = true;
@@ -61,20 +64,39 @@ public class BotsManager implements SettingsKeeper{
         setPauseTaskSender(true);
     }
 
-    public boolean isAfterDateLastExecutedAnswer(UrlWorker worker, Date date) {
-        if (worker != null && date != null) {
-            if(!dateOfLastExecutedAnswer.keySet().contains(worker) || dateOfLastExecutedAnswer.get(worker) == null || date.after(dateOfLastExecutedAnswer.get(worker))) {
-                return true;
+    public CircularFifoQueue<Long> getCashExecutedAnswer(UrlWorker worker) {
+        if(worker != null){
+            if(cashExecutedAnswer.containsKey(worker)) {
+                return cashExecutedAnswer.get(worker);
             }
+        }
+        return new CircularFifoQueue<Long>();
+    }
+
+    public boolean addCashExecutedAnswerNumber(UrlWorker worker, Long lastNumber) {
+        if(worker != null && lastNumber != null) {
+            if(!this.cashExecutedAnswer.containsKey(worker)) {
+                this.cashExecutedAnswer.put(worker,new CircularFifoQueue<Long>(cashExecutedAnswerSize));
+            }
+            return this.cashExecutedAnswer.get(worker).add(lastNumber);
         }
         return false;
     }
 
-    public void setDateOfLastExecutedAnswer(UrlWorker worker, Date dateOfLastExecutedAnswer) {
-        if(worker != null && dateOfLastExecutedAnswer != null) {
-            this.dateOfLastExecutedAnswer.put(worker, dateOfLastExecutedAnswer);
-        }
-    }
+    //    public boolean isAfterDateLastExecutedAnswer(UrlWorker worker, Date date) {
+//        if (worker != null && date != null) {
+//            if(!dateOfLastExecutedAnswer.keySet().contains(worker) || dateOfLastExecutedAnswer.get(worker) == null || date.after(dateOfLastExecutedAnswer.get(worker))) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    public void setDateOfLastExecutedAnswer(UrlWorker worker, Date dateOfLastExecutedAnswer) {
+//        if(worker != null && dateOfLastExecutedAnswer != null) {
+//            this.dateOfLastExecutedAnswer.put(worker, dateOfLastExecutedAnswer);
+//        }
+//    }
 
     public boolean isPauseProcessingExecutedAnswer() {
         return pauseProcessingExecutedAnswer;
