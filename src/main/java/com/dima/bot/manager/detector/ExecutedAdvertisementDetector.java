@@ -21,6 +21,7 @@ import java.util.*;
 public class ExecutedAdvertisementDetector implements Runnable {
 
     private BotsManager manager;
+    private Map<UrlWorker, CircularFifoQueue<Advertisement>> vassalWorkers = new HashMap<UrlWorker, CircularFifoQueue<Advertisement>>();
 
     public ExecutedAdvertisementDetector(BotsManager manager) {
         this.manager = manager;
@@ -30,21 +31,42 @@ public class ExecutedAdvertisementDetector implements Runnable {
     public void run() {
         while(!manager.isPauseProcessingExecutedAnswer()) {
             List<UrlWorker> workers = manager.getKeeper().getUrlWorkers();
+            for(UrlWorker worker : workers) {
+                if(!worker.isSeniorStatus()) {
+                    if(!vassalWorkers.containsKey(worker)) {
+                        vassalWorkers.put(worker, new CircularFifoQueue<Advertisement>(200));
+                    }
+                    AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
+                    if(extractor != null) {
+                        for(int i = 1; i <= extractor.getMaxNPage(); i++) {
+                            boolean isBreak = false;
+                            for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
+                                if(vassalWorkers.get(worker).contains(advertisement)) {
+                                    isBreak = true;
+                                } else {
+                                    vassalWorkers.get(worker).add(advertisement);
+                                }
+                            }
+                            if(isBreak) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
             for(int workindex = 0; workindex < workers.size() && !manager.isPauseProcessingExecutedAnswer(); workindex++  ) {
                 UrlWorker worker = manager.getKeeper().getUrlWorkers().get(workindex);
                 AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
                 //worker.isSeniorStatus()
-                if(extractor != null) {
+                if(extractor != null && worker.isSeniorStatus()) {
                     for(int i = 1; i <= extractor.getMaxNPage(); i++) {
                         boolean isBreak = false;
                         for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
                             if(!manager.getCashExecutedAnswer(worker).contains(advertisement.getNumber())) {
                                 if(advertisement.isPerformed()) {
-                                    // разослать всем openURL
-
                                     AdvertisementExtractor answerExtractor = manager.factoryAdvertisementExtractor(advertisement.getOpenURL());
                                     if(answerExtractor != null) {
-                                        List<Advertisement> answers = answerExtractor.extract (advertisement.getOpenURL());
+                                        List<Advertisement> answers = answerExtractor.extract(advertisement.getOpenURL());
                                         for(Advertisement temp : answers) {
                                             temp.setDate(advertisement.getDate());
                                             temp.setNumber(advertisement.getNumber());
@@ -52,7 +74,33 @@ public class ExecutedAdvertisementDetector implements Runnable {
                                             temp.setAutoYear(advertisement.getAutoYear());
                                             temp.setOpenURL(advertisement.getOpenURL());
                                             temp.setPerformed(advertisement.isPerformed());
-                                            manager.getTaskTracker().addFirstAutoFillTask(worker, (NewAdvertisement) temp);
+                                            manager.getCashExecutedAnswer(worker).add(temp.getNumber());
+                                            // разослать всем подчиненным адрессам
+                                            for(Map.Entry<UrlWorker,CircularFifoQueue<Advertisement>> vassalTemp : vassalWorkers.entrySet()) {
+                                                UrlWorker vassalWorker = vassalTemp.getKey();
+                                                CircularFifoQueue<Advertisement> vassalList = vassalTemp.getValue();
+                                                    for(Advertisement vassalAdvertisement : vassalList) {
+                                                        if(vassalAdvertisement.getNumber() == temp.getNumber()) {
+                                                            NewAdvertisement vassalNewTemp = new NewAdvertisement(vassalAdvertisement);
+                                                            for(Map.Entry<String,AutoFillEntity> entity : ((NewAdvertisement) temp).getAutoFillDetailsMap().entrySet()) {
+                                                                if(vassalWorker.getMinCost() < entity.getValue().getCost() && entity.getValue().getCost() <= vassalWorker.getMaxCost()) {
+                                                                    AutoFillEntity autoFillEntity = new AutoFillEntity();
+                                                                    autoFillEntity.setDeliveryTime(entity.getValue().getDeliveryTime());
+                                                                    autoFillEntity.setState(entity.getValue().getState());
+                                                                    autoFillEntity.setNote(entity.getValue().getNote());
+                                                                    autoFillEntity.setCost(entity.getValue().getCost()*(vassalWorker.getPercent() + 100)/100);
+                                                                    vassalNewTemp.getAutoFillDetailsMap().put(entity.getKey(),autoFillEntity);
+                                                                }
+                                                            }
+                                                            if(!vassalNewTemp.getAutoFillDetailsMap().isEmpty()) {
+                                                                manager.getTaskTracker().addFirstAutoFillTask(vassalWorker,vassalNewTemp);
+                                                            }
+                                                            break;
+                                                        }
+                                                    }
+
+                                            }
+
                                         }
                                     }
                                 }
@@ -65,7 +113,6 @@ public class ExecutedAdvertisementDetector implements Runnable {
                         }
                     }
                 }
-//                manager.setDateOfLastExecutedAnswer(worker, lastDate);
             }
             try {
                 Thread.sleep(manager.getRepeatDetectorSec()*1000);
@@ -75,13 +122,4 @@ public class ExecutedAdvertisementDetector implements Runnable {
         }
         manager.finishExecutedAdvertisementDetector();
     }
-
-//    private boolean checkDate(UrlWorker worker, Date date) {
-//        if (date != null) {
-//            if(lastDate == null || date.after(lastDate)) {
-//                lastDate = date;
-//            }
-//        }
-//        return manager.isAfterDateLastExecutedAnswer(worker, date);
-//    }
 }

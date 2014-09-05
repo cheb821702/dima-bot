@@ -248,7 +248,7 @@ public class ConfigurationPage extends JFrame {
             }
         });
         tableButtonsPane.add(editButton);
-        pauseButton = new JButton("Пауза");
+        pauseButton = new JButton("Старт");
         pauseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -314,12 +314,12 @@ public class ConfigurationPage extends JFrame {
         });
         tableButtonsPane.add(timerField);
 
-        chooseACTFileButton.setEnabled(false);
-        table.setEnabled(false);
-        addButton.setEnabled(false);
-        removeButton.setEnabled(false);
-        editButton.setEnabled(false);
-        timerField.setEnabled(false);
+        chooseACTFileButton.setEnabled(true);
+        table.setEnabled(true);
+        addButton.setEnabled(true);
+        removeButton.setEnabled(true);
+        editButton.setEnabled(true);
+        timerField.setEnabled(true);
 
         Container contentPane = getContentPane();
         contentPane.add(actPane, BorderLayout.PAGE_START);

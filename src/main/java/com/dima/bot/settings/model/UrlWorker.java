@@ -105,36 +105,39 @@ public class UrlWorker {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj == null || obj.getClass() != this.getClass()) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UrlWorker)) return false;
 
-        UrlWorker guest = (UrlWorker) obj;
+        UrlWorker worker = (UrlWorker) o;
 
-        if(getUrl() == null) {
-            return guest.getUrl() == null;
-        } else {
-            return getUrl().equals(guest.getUrl());
-        }
+        if (maxCost != worker.maxCost) return false;
+        if (minCost != worker.minCost) return false;
+        if (percent != worker.percent) return false;
+        if (seniorStatus != worker.seniorStatus) return false;
+        if (!url.equals(worker.url)) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((getUrl() == null) ? 0 : getUrl().hashCode());
+        int result = url.hashCode();
+        result = 31 * result + minCost;
+        result = 31 * result + maxCost;
+        result = 31 * result + percent;
+        result = 31 * result + (seniorStatus ? 1 : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(UrlWorker.class.getName());
-        builder.append("[url:").append(getUrl()).append("]");
-        return builder.toString();
+        return "UrlWorker{" +
+                "url='" + url + '\'' +
+                ", minCost=" + minCost +
+                ", maxCost=" + maxCost +
+                ", percent=" + percent +
+                ", seniorStatus=" + seniorStatus +
+                '}';
     }
 }
