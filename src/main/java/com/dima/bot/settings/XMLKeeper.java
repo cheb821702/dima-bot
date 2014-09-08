@@ -516,16 +516,20 @@ public class XMLKeeper implements SettingsKeeper {
                 for (int i = 0; i < workerNodes.getLength(); i++) {
                     Node workersChildren = workerNodes.item(i);
                     if (Node.ELEMENT_NODE == workersChildren.getNodeType() && URL_WORKER.equals(workersChildren.getNodeName())) {
-                        NodeList propertiesNodes = workersChildren.getChildNodes();
-                        for (int j = 0; j < propertiesNodes.getLength(); j++) {
-                            Node workerChildren = propertiesNodes.item(j);
-                            if (Node.ELEMENT_NODE == workerChildren.getNodeType() && URL_WORKER_URL_PROP.equals(workerChildren.getNodeName())) {
-                                if(urlWorker.getUrl().equals(workerChildren.getTextContent())) {
-                                    workersNode.removeChild(workersChildren);
-                                    break;
-                                }
-                            }
+                        UrlWorker worker = assembleUrlWorker(workersChildren);
+                        if(urlWorker.equals(worker)) {
+                            workersNode.removeChild(workersChildren);
                         }
+//                        NodeList propertiesNodes = workersChildren.getChildNodes();
+//                        for (int j = 0; j < propertiesNodes.getLength(); j++) {
+//                            Node workerChildren = propertiesNodes.item(j);
+//                            if (Node.ELEMENT_NODE == workerChildren.getNodeType() && URL_WORKER_URL_PROP.equals(workerChildren.getNodeName())) {
+//                                if(urlWorker.getUrl().equals(workerChildren.getTextContent())) {
+//                                    workersNode.removeChild(workersChildren);
+//                                    break;
+//                                }
+//                            }
+//                        }
                     }
                 }
             }

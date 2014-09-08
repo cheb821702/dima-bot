@@ -270,6 +270,7 @@ public class ConfigurationPage extends JFrame {
                     addButton.setEnabled(false);
                     removeButton.setEnabled(false);
                     editButton.setEnabled(false);
+                    manager.setRepeatDetectorSec(Integer.parseInt(timerField.getText()));
                     timerField.setEnabled(false);
                     manager.startProcessingAutoFilling();
                     manager.startProcessingExecutedAnswer();

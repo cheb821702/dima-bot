@@ -27,7 +27,6 @@ public class BotsManager implements SettingsKeeper{
 
     private Map<UrlWorker, CircularFifoQueue<Long>> cashExecutedAnswer = new HashMap<UrlWorker, CircularFifoQueue<Long>>();
     private int cashExecutedAnswerSize = 200;
-//    private Map<UrlWorker, Date> dateOfLastExecutedAnswer = new HashMap<UrlWorker,Date>();
     private boolean processingExecutedAnswerEnable = true;
     private boolean pauseProcessingExecutedAnswer = false;
     private boolean pauseTaskSender = true;

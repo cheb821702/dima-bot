@@ -21,23 +21,11 @@ public class Main {
 
         String url = "http://www.ferio.ru/clad/?ch=orders&st=ok&agent=53983&cp=901726&brand=2&criterion=&day=&month=&year=&keywrd=&list=1";
 
-        AdvertisementExtractor extractor = new FerioAdvertisementExtractor();
-        List<Advertisement> advertisements =  extractor.extract(url);
-
         try {
             SettingsKeeper keeper = new XMLKeeper();
-            System.out.println(keeper.getAutoCompleteTemplatesPath());
-            keeper.addSeniorUrlWorker(new UrlWorker("Http:1",1000,5000,20,15,120));
-            keeper.addVassalUrlWorker(new UrlWorker(url, 650, 3000, 20, 0, 50));
-            keeper.removeUrlWorker(new UrlWorker("Http:1",1000,5000,20,15,120));
-            List<UrlWorker> list = keeper.getUrlWorkers();
-            for (UrlWorker worker : list) {
-                System.out.println(worker.toString());
-            }
             BotsManager botsManager = new BotsManager(keeper);
             botsManager.runAutoFillDetector();
             botsManager.runExecutedAdvertisementDetector();
-            botsManager.startTaskSender();
             new ConfigurationPage(botsManager);
         } catch (IOException e) {
             e.printStackTrace();

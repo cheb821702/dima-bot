@@ -126,6 +126,7 @@ public class TaskSender implements  Runnable {
                                     for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
                                         if(AutoFillDetector.checkAuto(advertisement, autoFillEntity)) {
                                             for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
+                                                // TODO проверка
                                                 if(AutoFillDetector.checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
                                                     isAutoAnswerDetail = true;
                                                 }
@@ -170,7 +171,7 @@ public class TaskSender implements  Runnable {
                         }
                     }
                     if(!isSkippedAdvertisement) {
-//                    driver.findElement(By.name("submit")).submit();
+                        driver.findElement(By.name("submit")).submit();
                     }
                 } catch (NoSuchElementException e) {
 
