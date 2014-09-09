@@ -2,6 +2,7 @@ package com.dima.bot.manager.detector;
 
 import com.dima.bot.manager.executor.AdvertisementExtractor;
 import com.dima.bot.manager.model.Advertisement;
+import com.dima.bot.manager.model.DetectorOfAdvertisement;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.BotsManager;
@@ -37,6 +38,7 @@ public class AutoFillDetector implements Runnable{
                                 if(!advertisement.isPerformed()) {                // не обрабатывать уже отвеченные
                                     NewAdvertisement autoFillAdvertisement = getNewAdvertisement(advertisement);
                                     if(autoFillAdvertisement != null) {
+                                        autoFillAdvertisement.setSignOfDetector(DetectorOfAdvertisement.AUTO_FILL);
                                         manager.getTaskTracker().addFirstAutoFillTask(worker, autoFillAdvertisement);
                                     }
                                 }

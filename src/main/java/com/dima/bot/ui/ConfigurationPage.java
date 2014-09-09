@@ -9,13 +9,14 @@ import org.apache.log4j.Logger;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
 
@@ -337,7 +338,6 @@ public class ConfigurationPage extends JFrame {
                 System.exit(0);
             }
         });
-        //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     private void initTray() {
@@ -351,7 +351,8 @@ public class ConfigurationPage extends JFrame {
             logger.debug("system tray supported");
             tray=SystemTray.getSystemTray();
 
-            Image image=Toolkit.getDefaultToolkit().getImage("../resource/trayIcon.png");
+            Image image=Toolkit.getDefaultToolkit().getImage(getClass().getResource("../trayIcon.gif"));
+
             ActionListener exitListener=new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     //Exiting....

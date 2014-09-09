@@ -13,7 +13,7 @@ import java.util.Map;
 public class NewAdvertisement extends Advertisement{
 
     private Map<String,AutoFillEntity> autoFillDetailsMap = new HashMap<String,AutoFillEntity>();
-
+    private DetectorOfAdvertisement signOfDetector;
 
     public NewAdvertisement() {
     }
@@ -35,5 +35,13 @@ public class NewAdvertisement extends Advertisement{
 
     public void setAutoFillDetailsMap(Map<String, AutoFillEntity> autoFillDetailsMap) {
         this.autoFillDetailsMap = autoFillDetailsMap;
+    }
+
+    public DetectorOfAdvertisement getSignOfDetector() {
+        return signOfDetector;
+    }
+
+    public void setSignOfDetector(DetectorOfAdvertisement signOfDetector) {
+        this.signOfDetector = signOfDetector;
     }
 }

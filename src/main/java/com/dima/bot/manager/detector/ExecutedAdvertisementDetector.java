@@ -4,6 +4,7 @@ import com.dima.bot.manager.executor.AdvertisementExtractor;
 import com.dima.bot.manager.model.Advertisement;
 import com.dima.bot.manager.BotsManager;
 import com.dima.bot.manager.model.AutoFillEntity;
+import com.dima.bot.manager.model.DetectorOfAdvertisement;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.util.URLUtil;
@@ -93,6 +94,7 @@ public class ExecutedAdvertisementDetector implements Runnable {
                                                                 }
                                                             }
                                                             if(!vassalNewTemp.getAutoFillDetailsMap().isEmpty()) {
+                                                                vassalNewTemp.setSignOfDetector(DetectorOfAdvertisement.EXECUTED);
                                                                 manager.getTaskTracker().addFirstAutoFillTask(vassalWorker,vassalNewTemp);
                                                             }
                                                             break;

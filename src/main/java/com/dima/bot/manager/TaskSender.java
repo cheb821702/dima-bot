@@ -2,10 +2,15 @@ package com.dima.bot.manager;
 
 import com.dima.bot.manager.detector.AutoFillDetector;
 import com.dima.bot.manager.model.AutoFillEntity;
+import com.dima.bot.manager.model.DetectorOfAdvertisement;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.manager.util.FerioDataOnPageUtil;
 import com.dima.bot.settings.model.UrlWorker;
+import com.dima.bot.util.TaskSenderLevel;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -27,11 +32,14 @@ public class TaskSender implements  Runnable {
     private BotsManager manager;
     private UrlWorker worker;
 
+    final Logger logger = LogManager.getLogger(TaskSender.class);
+
     @Override
     public void run() {
         while(this.worker != null && this.manager.getUrlWorkers().contains(this.worker) && !this.manager.isPauseTaskSender()) {
             NewAdvertisement advertisement = manager.getTaskTracker().getLastAutoFillTask(worker);
             boolean isSkippedAdvertisement = true;
+            List<String> logSenderList = new LinkedList<String>();
             if(advertisement == null) {
                 break;
             } else {
@@ -126,7 +134,6 @@ public class TaskSender implements  Runnable {
                                     for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
                                         if(AutoFillDetector.checkAuto(advertisement, autoFillEntity)) {
                                             for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
-                                                // TODO проверка
                                                 if(AutoFillDetector.checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
                                                     isAutoAnswerDetail = true;
                                                 }
@@ -134,8 +141,21 @@ public class TaskSender implements  Runnable {
                                         }
                                     }
 
-                                    if(!isAutoAnswerDetail) {
+                                    if(!(isAutoAnswerDetail && DetectorOfAdvertisement.EXECUTED.equals(advertisement.getSignOfDetector()))) {
                                         isSkippedAdvertisement = false;
+
+                                        StringBuilder logBuilder = new StringBuilder();
+                                        logBuilder.append("№");
+                                        logBuilder.append(advertisement.getNumber());
+                                        logBuilder.append(" ");
+                                        logBuilder.append(detailEntity.getCost());
+                                        logBuilder.append("руб. ");
+                                        logBuilder.append(detailEntity.getDeliveryTime());
+                                        logBuilder.append(" ");
+                                        logBuilder.append(detailEntity.getState());
+                                        logBuilder.append(" ");
+                                        logBuilder.append(zaprosText);
+                                        logSenderList.add(logBuilder.toString());
 
                                         detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
                                         WebElement price = tbody.findElement(By.name("price-" + Integer.toString(i) + "-1"));
@@ -171,7 +191,10 @@ public class TaskSender implements  Runnable {
                         }
                     }
                     if(!isSkippedAdvertisement) {
-                        driver.findElement(By.name("submit")).submit();
+                        driver.findElement(By.name("submit")).click();
+                        for(String log : logSenderList) {
+                            logger.log(TaskSenderLevel.SENDER,log);
+                        }
                     }
                 } catch (NoSuchElementException e) {
 
