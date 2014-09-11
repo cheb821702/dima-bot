@@ -6,9 +6,6 @@ import com.dima.bot.manager.model.DetectorOfAdvertisement;
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.manager.util.FerioDataOnPageUtil;
 import com.dima.bot.settings.model.UrlWorker;
-import com.dima.bot.util.TaskSenderLevel;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -157,7 +154,7 @@ public class TaskSender implements  Runnable {
                                         logBuilder.append(zaprosText);
                                         logSenderList.add(logBuilder.toString());
 
-                                        detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
+
                                         WebElement price = tbody.findElement(By.name("price-" + Integer.toString(i) + "-1"));
                                         price.sendKeys(Integer.toString(detailEntity.getCost()));
 
@@ -193,7 +190,7 @@ public class TaskSender implements  Runnable {
                     if(!isSkippedAdvertisement) {
                         driver.findElement(By.name("submit")).click();
                         for(String log : logSenderList) {
-                            logger.log(TaskSenderLevel.SENDER,log);
+                            logger.info(log);
                         }
                     }
                 } catch (NoSuchElementException e) {
