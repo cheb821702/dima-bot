@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class XMLKeeper implements SettingsKeeper {
 
-    Logger logger = Logger.getLogger(XMLKeeper.class);
+    Logger logger = Logger.getLogger("debugLogger");
 
     private static String FILE_PATH = "";
     private static String FILE_NAME = "init.xml";

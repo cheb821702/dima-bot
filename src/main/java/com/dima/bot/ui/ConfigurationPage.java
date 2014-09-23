@@ -25,7 +25,7 @@ import javax.swing.text.PlainDocument;
  */
 public class ConfigurationPage extends JFrame {
 
-    Logger logger = Logger.getLogger(ConfigurationPage.class);
+    Logger logger = Logger.getLogger("debugLogger");
 
     private TrayIcon trayIcon;
     private SystemTray tray;

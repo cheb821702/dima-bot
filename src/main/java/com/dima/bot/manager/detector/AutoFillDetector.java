@@ -8,6 +8,8 @@ import com.dima.bot.manager.model.AutoFillEntity;
 import com.dima.bot.manager.BotsManager;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.util.URLUtil;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.util.Date;
 import java.util.Map;
@@ -20,6 +22,8 @@ public class AutoFillDetector implements Runnable{
     private BotsManager manager;
     private Date lastDate = null;
 
+    final Logger logger = LogManager.getLogger("debugLogger");
+
     public AutoFillDetector(BotsManager manager) {
         this.manager = manager;
     }
@@ -31,6 +35,7 @@ public class AutoFillDetector implements Runnable{
                 UrlWorker worker = manager.getKeeper().getUrlWorkers().get(workindex);
                 AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
                 if(extractor != null) {
+                    logger.debug("Обрабатывается worker (AutoFillDetector):" + worker.getUrl());
                     for(int i = 1; i <= extractor.getMaxNPage(); i++) {
                         boolean isBreak = false;
                         for(Advertisement advertisement : extractor.extract(URLUtil.getUrlForPage(worker.getUrl(), i))) {
@@ -40,7 +45,10 @@ public class AutoFillDetector implements Runnable{
                                     if(autoFillAdvertisement != null) {
                                         autoFillAdvertisement.setSignOfDetector(DetectorOfAdvertisement.AUTO_FILL);
                                         manager.getTaskTracker().addFirstAutoFillTask(worker, autoFillAdvertisement);
+                                        logger.debug("ADD to TASK TRACKER(AutoFillDetector):" + autoFillAdvertisement.toString());
                                     }
+                                } else {
+                                    logger.debug("Уже отвеченные(AutoFillDetector):" + advertisement.toString());
                                 }
                             } else {
                                 isBreak = true;
