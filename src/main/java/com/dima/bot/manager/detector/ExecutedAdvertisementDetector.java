@@ -9,6 +9,8 @@ import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.util.URLUtil;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -23,6 +25,8 @@ public class ExecutedAdvertisementDetector implements Runnable {
 
     private BotsManager manager;
     private Map<UrlWorker, CircularFifoQueue<Advertisement>> vassalWorkers = new HashMap<UrlWorker, CircularFifoQueue<Advertisement>>();
+
+    final Logger logger = LogManager.getLogger("debugLogger");
 
     public ExecutedAdvertisementDetector(BotsManager manager) {
         this.manager = manager;
@@ -58,6 +62,7 @@ public class ExecutedAdvertisementDetector implements Runnable {
             for(int workindex = 0; workindex < workers.size() && !manager.isPauseProcessingExecutedAnswer(); workindex++  ) {
                 UrlWorker worker = manager.getKeeper().getUrlWorkers().get(workindex);
                 AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
+                logger.debug("Обрабатывается worker (ExecutedAdvertisementDetector):" + worker.getUrl());
                 //worker.isSeniorStatus()
                 if(extractor != null && worker.isSeniorStatus()) {
                     for(int i = 1; i <= extractor.getMaxNPage(); i++) {
@@ -96,6 +101,7 @@ public class ExecutedAdvertisementDetector implements Runnable {
                                                             if(!vassalNewTemp.getAutoFillDetailsMap().isEmpty()) {
                                                                 vassalNewTemp.setSignOfDetector(DetectorOfAdvertisement.EXECUTED);
                                                                 manager.getTaskTracker().addFirstAutoFillTask(vassalWorker,vassalNewTemp);
+                                                                logger.debug("ADD to TASK TRACKER(ExecutedAdvertisementDetector):" + vassalNewTemp.toString());
                                                             }
                                                             break;
                                                         }

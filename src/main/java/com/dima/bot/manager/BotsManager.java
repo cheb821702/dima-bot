@@ -9,6 +9,8 @@ import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.SettingsKeeper;
 import com.dima.bot.settings.model.UrlWorker;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -32,6 +34,7 @@ public class BotsManager implements SettingsKeeper{
     private boolean pauseTaskSender = true;
     private int repeatDetectorSec = 1200;
 
+    final Logger logger = LogManager.getLogger("debugLogger");
 
     public BotsManager(SettingsKeeper keeper) {
         this.keeper = keeper;
@@ -56,11 +59,13 @@ public class BotsManager implements SettingsKeeper{
                 TaskSender sender = new TaskSender(worker,this);
                 ThreadManager.INSTANCE.execute(sender);
             }
+            logger.debug("Start TaskSender");
         }
     }
 
     public void pauseTaskSender() {
         setPauseTaskSender(true);
+        logger.debug("Pause TaskSender");
     }
 
     public CircularFifoQueue<Long> getCashExecutedAnswer(UrlWorker worker) {
@@ -103,10 +108,12 @@ public class BotsManager implements SettingsKeeper{
 
     public void startProcessingExecutedAnswer() {
         this.pauseProcessingExecutedAnswer = false;
+        logger.debug("Start ProcessingExecutedAnswer");
     }
 
     public void pauseProcessingExecutedAnswer() {
         this.pauseProcessingExecutedAnswer = true;
+        logger.debug("Pause ProcessingExecutedAnswer");
     }
 
     public void runExecutedAdvertisementDetector() {
@@ -114,11 +121,13 @@ public class BotsManager implements SettingsKeeper{
             processingExecutedAnswerEnable = false;
             ExecutedAdvertisementDetector detector = new ExecutedAdvertisementDetector(this);
             ThreadManager.INSTANCE.execute(detector);
+            logger.debug("Run ExecutedAdvertisementDetector");
         }
     }
 
     public void finishExecutedAdvertisementDetector() {
         processingExecutedAnswerEnable = true;
+        logger.debug("Finish ExecutedAdvertisementDetector");
     }
 
     public boolean isAfterDateLastAutoFill(UrlWorker worker, Date date) {
@@ -142,10 +151,12 @@ public class BotsManager implements SettingsKeeper{
 
     public void startProcessingAutoFilling() {
         this.pauseProcessingAutoFilling = false;
+        logger.debug("Start ProcessingAutoFilling");
     }
 
     public void pauseProcessingAutoFilling() {
         this.pauseProcessingAutoFilling = true;
+        logger.debug("Pause ProcessingAutoFilling");
     }
 
     public void runAutoFillDetector() {
@@ -153,11 +164,13 @@ public class BotsManager implements SettingsKeeper{
             processingAutoFillingEnable = false;
             AutoFillDetector detector = new AutoFillDetector(this);
             ThreadManager.INSTANCE.execute(detector);
+            logger.debug("Run AutoFillDetector");
         }
     }
 
     public void finishAutoFillDetector() {
         processingAutoFillingEnable = true;
+        logger.debug("Finish AutoFillDetector");
     }
 
     public SettingsKeeper getKeeper() {

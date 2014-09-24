@@ -29,7 +29,7 @@ public class TaskSender implements  Runnable {
     private BotsManager manager;
     private UrlWorker worker;
 
-    final Logger logger = LogManager.getLogger(TaskSender.class);
+    final Logger logger = LogManager.getLogger("reportsLogger");
 
     @Override
     public void run() {
