@@ -265,6 +265,7 @@ public class ConfigurationPage extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if("Пауза".equals(pauseButton.getText())) {
+                    logger.debug("PAUSE BUTTON");
                     pauseButton.setText("Старт");
                     chooseACTFileButton.setEnabled(true);
                     table.setEnabled(true);
@@ -276,6 +277,7 @@ public class ConfigurationPage extends JFrame {
                     manager.pauseProcessingExecutedAnswer();
                     manager.pauseTaskSender();
                 } else {
+                    logger.debug("START BUTTON");
                     pauseButton.setText("Пауза");
                     chooseACTFileButton.setEnabled(false);
                     table.setEnabled(false);

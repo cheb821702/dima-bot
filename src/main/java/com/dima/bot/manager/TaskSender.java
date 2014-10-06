@@ -30,9 +30,11 @@ public class TaskSender implements  Runnable {
     private UrlWorker worker;
 
     final Logger logger = LogManager.getLogger("reportsLogger");
+    final Logger debugLogger = LogManager.getLogger("debugLogger");
 
     @Override
     public void run() {
+        debugLogger.info("Run TaskSender");
         while(this.worker != null && this.manager.getUrlWorkers().contains(this.worker) && !this.manager.isPauseTaskSender()) {
             NewAdvertisement advertisement = manager.getTaskTracker().getLastAutoFillTask(worker);
             boolean isSkippedAdvertisement = true;
@@ -40,6 +42,7 @@ public class TaskSender implements  Runnable {
             if(advertisement == null) {
                 break;
             } else {
+                debugLogger.debug("Opening FireFox by " + advertisement.getOpenURL());
                 WebDriver driver = new FirefoxDriver();
                 driver.get(advertisement.getOpenURL());
 
@@ -89,7 +92,7 @@ public class TaskSender implements  Runnable {
                         }
                     }
                 } catch (NoSuchElementException e) {
-
+                    debugLogger.error("Selenium didn't find answered element.",e);
                 }
 
                 // заполнеие формы запроса
@@ -104,6 +107,7 @@ public class TaskSender implements  Runnable {
                                 WebElement nomber = tbody.findElement(By.name("nomber-" + Integer.toString(i)));
                                 nomberText = nomber.getAttribute("value");
                             } catch (NoSuchElementException e) {
+                                debugLogger.debug("Selenium didn't find origin number.",e);
                             }
 
                             // выбор детали на форме
@@ -194,7 +198,7 @@ public class TaskSender implements  Runnable {
                         }
                     }
                 } catch (NoSuchElementException e) {
-
+                    debugLogger.error("Selenium didn't find element.Form filling.",e);
                 }
 
                 manager.getTaskTracker().removeAutoFillTask(worker,advertisement);
@@ -214,9 +218,10 @@ public class TaskSender implements  Runnable {
                 Random rand = new Random();
                 int randomNum = rand.nextInt((maxSec - minSec) + 1) + minSec;
                 try {
+                    debugLogger.debug("TaskSender sleep by " + randomNum + " sec.");
                     Thread.sleep(randomNum*1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    debugLogger.error(e.getMessage(),e);
                 }
             }
         }

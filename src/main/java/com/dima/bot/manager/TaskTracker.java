@@ -2,6 +2,8 @@ package com.dima.bot.manager;
 
 import com.dima.bot.manager.model.NewAdvertisement;
 import com.dima.bot.settings.model.UrlWorker;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -14,9 +16,11 @@ import java.util.*;
  */
 public class TaskTracker {
 
+    final Logger logger = LogManager.getLogger("debugLogger");
     private Map<UrlWorker,List<NewAdvertisement>> autoFillTracks = new HashMap<UrlWorker, List<NewAdvertisement>>();
 
     public TaskTracker(List<UrlWorker> workers) {
+        logger.debug("Start TaskTracker with " + workers);
         if(workers != null) {
             for(UrlWorker worker : workers) {
                 autoFillTracks.put(worker, new LinkedList<NewAdvertisement>());
