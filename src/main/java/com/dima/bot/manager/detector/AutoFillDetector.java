@@ -72,17 +72,26 @@ public class AutoFillDetector implements Runnable{
 
     public NewAdvertisement getNewAdvertisement(Advertisement advertisement) {
         NewAdvertisement autoFillAdvertisement = null;
+        AutoFillEntity checkedAutoFillEntity = null;
+        String detailKey = null;
         for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
             if(checkAuto(advertisement, autoFillEntity)) {
                 for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
                     if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
-                        if(autoFillAdvertisement == null) {
-                            autoFillAdvertisement = new NewAdvertisement(advertisement);
+                        if(detailKey != null && detailKey.trim().length() > detail.getKey().trim().length()) {
+                            continue;
                         }
-                        autoFillAdvertisement.getAutoFillDetailsMap().put(detail.getKey(), autoFillEntity);
+                        detailKey = detail.getKey();
+                        checkedAutoFillEntity = autoFillEntity;
                     }
                 }
             }
+        }
+        if(detailKey != null && checkedAutoFillEntity != null) {
+            if(autoFillAdvertisement == null) {
+                autoFillAdvertisement = new NewAdvertisement(advertisement);
+            }
+            autoFillAdvertisement.getAutoFillDetailsMap().put(detailKey, checkedAutoFillEntity);
         }
         return  autoFillAdvertisement;
     }
