@@ -22,6 +22,9 @@ public class BotsManager implements SettingsKeeper{
 
     private SettingsKeeper keeper;
     private TaskTracker taskTracker;
+
+    private Map<UrlWorker, Date> timerLastAnswer = new HashMap<UrlWorker,Date>();
+
     private List<AutoFillEntity> autoFillEntities;
     private Map<UrlWorker, Date> dateOfLastAutoFill = new HashMap<UrlWorker,Date>();
     private boolean processingAutoFillingEnable = true;
@@ -42,6 +45,14 @@ public class BotsManager implements SettingsKeeper{
 
         ExcelAutoFillUtil autoFillUtil = new ExcelAutoFillUtil();
         this.autoFillEntities = autoFillUtil.getEntities(getAutoCompleteTemplatesPath());
+    }
+
+    public void putTimerLastAnswerDate(UrlWorker worker, Date date) {
+        timerLastAnswer.put(worker,date);
+    }
+
+    public Map<UrlWorker, Date> getTimerLastAnswer() {
+        return timerLastAnswer;
     }
 
     public boolean isPauseTaskSender() {
@@ -69,38 +80,19 @@ public class BotsManager implements SettingsKeeper{
     }
 
     public CircularFifoQueue<Long> getCashExecutedAnswer(UrlWorker worker) {
+        CircularFifoQueue<Long> workerCash;
         if(worker != null){
             if(cashExecutedAnswer.containsKey(worker)) {
-                return cashExecutedAnswer.get(worker);
+                workerCash = cashExecutedAnswer.get(worker);
+            } else {
+                workerCash = new CircularFifoQueue<Long>(cashExecutedAnswerSize);
+                this.cashExecutedAnswer.put(worker, workerCash);
             }
+        } else {
+            workerCash = new CircularFifoQueue<Long>(cashExecutedAnswerSize);
         }
-        return new CircularFifoQueue<Long>();
+        return workerCash;
     }
-
-    public boolean addCashExecutedAnswerNumber(UrlWorker worker, Long lastNumber) {
-        if(worker != null && lastNumber != null) {
-            if(!this.cashExecutedAnswer.containsKey(worker)) {
-                this.cashExecutedAnswer.put(worker,new CircularFifoQueue<Long>(cashExecutedAnswerSize));
-            }
-            return this.cashExecutedAnswer.get(worker).add(lastNumber);
-        }
-        return false;
-    }
-
-    //    public boolean isAfterDateLastExecutedAnswer(UrlWorker worker, Date date) {
-//        if (worker != null && date != null) {
-//            if(!dateOfLastExecutedAnswer.keySet().contains(worker) || dateOfLastExecutedAnswer.get(worker) == null || date.after(dateOfLastExecutedAnswer.get(worker))) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//
-//    public void setDateOfLastExecutedAnswer(UrlWorker worker, Date dateOfLastExecutedAnswer) {
-//        if(worker != null && dateOfLastExecutedAnswer != null) {
-//            this.dateOfLastExecutedAnswer.put(worker, dateOfLastExecutedAnswer);
-//        }
-//    }
 
     public boolean isPauseProcessingExecutedAnswer() {
         return pauseProcessingExecutedAnswer;
@@ -253,6 +245,9 @@ public class BotsManager implements SettingsKeeper{
             String res = keeper.removeUrlWorker(urlWorker);
             if(res != null) {
                 taskTracker.removeUrlWorkerTrack(urlWorker);
+                dateOfLastAutoFill.remove(urlWorker);
+                cashExecutedAnswer.remove(urlWorker);
+                timerLastAnswer.remove(urlWorker);
             }
             return res;
         }

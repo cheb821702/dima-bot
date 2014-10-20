@@ -4,12 +4,14 @@ import com.dima.bot.manager.BotsManager;
 import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.ui.component.IntFilter;
+import com.dima.bot.util.WorkersTableModel;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -33,6 +35,7 @@ public class ConfigurationPage extends JFrame {
 
     private JButton chooseACTFileButton;
     private final JTable table;
+    private final JTable timerTable;
     private JButton addButton;
     private JButton removeButton;
     private JButton editButton;
@@ -121,23 +124,9 @@ public class ConfigurationPage extends JFrame {
         actPane.add(chooseACTFileButton);
         actPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        table = new JTable(new AbstractTableModel() {
-
-            private String[] columnNames = {"Адрес","Цена","Процент","Время","Статус"};
-
-            @Override
-            public int getRowCount() {
-                if(manager != null) {
-                    return manager.getUrlWorkers().size();
-                }
-                return 0;
-            }
-
-            @Override
-            public int getColumnCount() {
-                return columnNames.length;
-            }
-
+        JPanel tablePane = new JPanel();
+        tablePane.setLayout(new FlowLayout());
+        table = new JTable(new WorkersTableModel(new String[]{"Адрес","Цена","Процент","Время","Статус"}, manager) {
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
                 if(manager != null && columnIndex>=0 && columnIndex<=4) {
@@ -153,20 +142,32 @@ public class ConfigurationPage extends JFrame {
                 }
                 return null;
             }
-
-            @Override
-            public String getColumnName(int col) {
-                return columnNames[col];
-            }
-
-            @Override
-            public Class getColumnClass(int c) {
-                return String.class;
-            }
         });
         JScrollPane tableScrollPane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
         table.setRowSelectionAllowed(true);
+        tablePane.add(tableScrollPane);
+
+        timerTable = new JTable(new WorkersTableModel(new String[]{"Отсчет ответа"}, manager) {
+            @Override
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                if(manager != null && columnIndex==0) {
+                    List<UrlWorker> workers = manager.getUrlWorkers();
+                    if(rowIndex < workers.size()) {
+                        UrlWorker worker = workers.get(rowIndex);
+                        Date date = manager.getTimerLastAnswer().get(worker);
+                        if(date != null) {
+                            return ((new Date()).getTime()-date.getTime())/1000;
+                        }
+                    }
+                }
+                return null;
+            }
+        });
+        tableScrollPane = new JScrollPane(timerTable);
+        timerTable.setFillsViewportHeight(true);
+        timerTable.setRowSelectionAllowed(false);
+        tablePane.add(tableScrollPane);
 
         JPanel tableButtonsPane = new JPanel();
         tableButtonsPane.setLayout(new FlowLayout());
@@ -338,7 +339,7 @@ public class ConfigurationPage extends JFrame {
 
         Container contentPane = getContentPane();
         contentPane.add(actPane, BorderLayout.PAGE_START);
-        contentPane.add(tableScrollPane, BorderLayout.CENTER);
+        contentPane.add(tablePane, BorderLayout.CENTER);
         contentPane.add(tableButtonsPane, BorderLayout.PAGE_END);
 
 

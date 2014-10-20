@@ -35,12 +35,11 @@ public class ExecutedAdvertisementDetector implements Runnable {
     @Override
     public void run() {
         while(!manager.isPauseProcessingExecutedAnswer()) {
+            vassalWorkers.clear();
             List<UrlWorker> workers = manager.getKeeper().getUrlWorkers();
             for(UrlWorker worker : workers) {
                 if(!worker.isSeniorStatus()) {
-                    if(!vassalWorkers.containsKey(worker)) {
-                        vassalWorkers.put(worker, new CircularFifoQueue<Advertisement>(200));
-                    }
+                    vassalWorkers.put(worker, new CircularFifoQueue<Advertisement>(200));
                     AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
                     if(extractor != null) {
                         for(int i = 1; i <= extractor.getMaxNPage(); i++) {
@@ -55,15 +54,20 @@ public class ExecutedAdvertisementDetector implements Runnable {
                             if(isBreak) {
                                 break;
                             }
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
             }
+
             for(int workindex = 0; workindex < workers.size() && !manager.isPauseProcessingExecutedAnswer(); workindex++  ) {
                 UrlWorker worker = manager.getKeeper().getUrlWorkers().get(workindex);
                 AdvertisementExtractor extractor = manager.factoryAdvertisementExtractor(worker.getUrl());
                 logger.debug("Обрабатывается worker (ExecutedAdvertisementDetector):" + worker.getUrl());
-                //worker.isSeniorStatus()
                 if(extractor != null && worker.isSeniorStatus()) {
                     for(int i = 1; i <= extractor.getMaxNPage(); i++) {
                         boolean isBreak = false;
@@ -85,30 +89,28 @@ public class ExecutedAdvertisementDetector implements Runnable {
                                             for(Map.Entry<UrlWorker,CircularFifoQueue<Advertisement>> vassalTemp : vassalWorkers.entrySet()) {
                                                 UrlWorker vassalWorker = vassalTemp.getKey();
                                                 CircularFifoQueue<Advertisement> vassalList = vassalTemp.getValue();
-                                                    for(Advertisement vassalAdvertisement : vassalList) {
-                                                        if(vassalAdvertisement.getNumber() == temp.getNumber()) {
-                                                            NewAdvertisement vassalNewTemp = new NewAdvertisement(vassalAdvertisement);
-                                                            for(Map.Entry<String,AutoFillEntity> entity : ((NewAdvertisement) temp).getAutoFillDetailsMap().entrySet()) {
-                                                                if(vassalWorker.getMinCost() < entity.getValue().getCost() && entity.getValue().getCost() <= vassalWorker.getMaxCost()) {
-                                                                    AutoFillEntity autoFillEntity = new AutoFillEntity();
-                                                                    autoFillEntity.setDeliveryTime(entity.getValue().getDeliveryTime());
-                                                                    autoFillEntity.setState(entity.getValue().getState());
-                                                                    autoFillEntity.setNote(entity.getValue().getNote());
-                                                                    autoFillEntity.setCost(entity.getValue().getCost()*(vassalWorker.getPercent() + 100)/100);
-                                                                    vassalNewTemp.getAutoFillDetailsMap().put(entity.getKey(),autoFillEntity);
-                                                                }
+                                                for(Advertisement vassalAdvertisement : vassalList) {
+                                                    if(vassalAdvertisement.getNumber() == temp.getNumber()) {
+                                                        NewAdvertisement vassalNewTemp = new NewAdvertisement(vassalAdvertisement);
+                                                        for(Map.Entry<String,AutoFillEntity> entity : ((NewAdvertisement) temp).getAutoFillDetailsMap().entrySet()) {
+                                                            if(vassalWorker.getMinCost() < entity.getValue().getCost() && entity.getValue().getCost() <= vassalWorker.getMaxCost()) {
+                                                                AutoFillEntity autoFillEntity = new AutoFillEntity();
+                                                                autoFillEntity.setDeliveryTime(entity.getValue().getDeliveryTime());
+                                                                autoFillEntity.setState(entity.getValue().getState());
+                                                                autoFillEntity.setNote(entity.getValue().getNote());
+                                                                autoFillEntity.setCost(entity.getValue().getCost()*(vassalWorker.getPercent() + 100)/100);
+                                                                vassalNewTemp.getAutoFillDetailsMap().put(entity.getKey(),autoFillEntity);
                                                             }
-                                                            if(!vassalNewTemp.getAutoFillDetailsMap().isEmpty()) {
-                                                                vassalNewTemp.setSignOfDetector(DetectorOfAdvertisement.EXECUTED);
-                                                                manager.getTaskTracker().addFirstAutoFillTask(vassalWorker,vassalNewTemp);
-                                                                logger.debug("ADD to TASK TRACKER(ExecutedAdvertisementDetector):" + vassalNewTemp.toString());
-                                                            }
-                                                            break;
                                                         }
+                                                        if(!vassalNewTemp.getAutoFillDetailsMap().isEmpty()) {
+                                                            vassalNewTemp.setSignOfDetector(DetectorOfAdvertisement.EXECUTED);
+                                                            manager.getTaskTracker().addFirstAutoFillTask(vassalWorker,vassalNewTemp);
+                                                            logger.debug("ADD to TASK TRACKER(ExecutedAdvertisementDetector):" + vassalNewTemp.toString());
+                                                        }
+                                                        break;
                                                     }
-
+                                                }
                                             }
-
                                         }
                                     }
                                 }

@@ -156,7 +156,6 @@ public class TaskSender implements  Runnable {
                                         logBuilder.append(detailEntity.getState());
                                         logBuilder.append(" ");
                                         logBuilder.append(zaprosText);
-                                        logSenderList.add(logBuilder.toString());
 
 
                                         WebElement price = tbody.findElement(By.name("price-" + Integer.toString(i) + "-1"));
@@ -183,7 +182,11 @@ public class TaskSender implements  Runnable {
                                         if(detailEntity.getDetail() != null && !zaprosText.equals(detailEntity.getDetail())) {
                                             WebElement rubric = tbody.findElement(By.name("rubric-" + Integer.toString(i) + "-1"));
                                             rubric.sendKeys(detailEntity.getDetail());
+                                            logBuilder.append(" (");
+                                            logBuilder.append(detailEntity.getDetail());
+                                            logBuilder.append(")");
                                         }
+                                        logSenderList.add(logBuilder.toString());
                                     }
                                 }
                             }
@@ -206,6 +209,7 @@ public class TaskSender implements  Runnable {
             }
 
             if(!isSkippedAdvertisement) {
+                manager.putTimerLastAnswerDate(this.worker,new Date());
                 // выставление задержки
                 int minSec = worker.getMinSecTime();
                 int maxSec = worker.getMaxSecTime();
