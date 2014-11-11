@@ -125,7 +125,7 @@ public class ConfigurationPage extends JFrame {
         actPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel tablePane = new JPanel();
-        tablePane.setLayout(new FlowLayout());
+        tablePane.setLayout(new BoxLayout(tablePane, BoxLayout.X_AXIS));
         table = new JTable(new WorkersTableModel(new String[]{"Адрес","Цена","Процент","Время","Статус"}, manager) {
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
@@ -148,6 +148,7 @@ public class ConfigurationPage extends JFrame {
         table.setRowSelectionAllowed(true);
         tablePane.add(tableScrollPane);
 
+
         timerTable = new JTable(new WorkersTableModel(new String[]{"Отсчет ответа"}, manager) {
             @Override
             public Object getValueAt(int rowIndex, int columnIndex) {
@@ -167,7 +168,10 @@ public class ConfigurationPage extends JFrame {
         tableScrollPane = new JScrollPane(timerTable);
         timerTable.setFillsViewportHeight(true);
         timerTable.setRowSelectionAllowed(false);
+        tableScrollPane.setPreferredSize(new Dimension(100,Short.MAX_VALUE));
+        tableScrollPane.setMaximumSize(new Dimension(100,Short.MAX_VALUE));
         tablePane.add(tableScrollPane);
+
 
         JPanel tableButtonsPane = new JPanel();
         tableButtonsPane.setLayout(new FlowLayout());
