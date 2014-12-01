@@ -45,6 +45,9 @@ public class BotsManager implements SettingsKeeper{
 
         ExcelAutoFillUtil autoFillUtil = new ExcelAutoFillUtil();
         this.autoFillEntities = autoFillUtil.getEntities(getAutoCompleteTemplatesPath());
+        for(UrlWorker urlWorker : getUrlWorkers()) {
+            timerLastAnswer.put(urlWorker,new Date());
+        }
     }
 
     public void putTimerLastAnswerDate(UrlWorker worker, Date date) {

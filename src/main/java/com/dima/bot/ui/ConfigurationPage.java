@@ -11,14 +11,16 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
+import java.util.Timer;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.text.PlainDocument;
 
 
@@ -41,6 +43,7 @@ public class ConfigurationPage extends JFrame {
     private JButton editButton;
     private JButton pauseButton;
     private JTextField timerField;
+    private Timer lastAutofillTimer;
 
     public ConfigurationPage(BotsManager initManager){
         super("Staff Worker");
@@ -158,7 +161,7 @@ public class ConfigurationPage extends JFrame {
                         UrlWorker worker = workers.get(rowIndex);
                         Date date = manager.getTimerLastAnswer().get(worker);
                         if(date != null) {
-                            return ((new Date()).getTime()-date.getTime())/1000;
+                            return String.valueOf(((new Date()).getTime()-date.getTime())/1000) + " сек";
                         }
                     }
                 }
@@ -171,7 +174,6 @@ public class ConfigurationPage extends JFrame {
         tableScrollPane.setPreferredSize(new Dimension(100,Short.MAX_VALUE));
         tableScrollPane.setMaximumSize(new Dimension(100,Short.MAX_VALUE));
         tablePane.add(tableScrollPane);
-
 
         JPanel tableButtonsPane = new JPanel();
         tableButtonsPane.setLayout(new FlowLayout());
@@ -356,6 +358,17 @@ public class ConfigurationPage extends JFrame {
                 System.exit(0);
             }
         });
+
+        lastAutofillTimer = new Timer();
+        lastAutofillTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Date currentDate = new Date();
+                if ("Пауза".equals(pauseButton.getText())) {
+                    timerTable.repaint();
+                }
+            }
+        }, 1000, 1000);
     }
 
     private void initTray() {
