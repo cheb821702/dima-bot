@@ -33,4 +33,16 @@ public enum ThreadManager {
     public void shutdown() {
         executor.shutdown();
     }
+
+    public String getActiveThreadMsg() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Количество активных:");
+        builder.append(executor.getTaskCount()).append("\n");
+        builder.append(" Классы:");
+        for(Runnable run : executor.getQueue()) {
+            builder.append(run.getClass());
+            builder.append("\n");
+        }
+        return builder.toString();
+    }
 }

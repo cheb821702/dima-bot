@@ -86,7 +86,7 @@ public class TaskSender implements  Runnable {
                                     answeredDetails.add(zapros);
                                     break;
                                 } else {
-                                    pos = answerText.indexOf(zapros);
+                                    pos = answerText.indexOf(zapros, pos + zapros.length());
                                 }
                             }
                         }
@@ -107,14 +107,13 @@ public class TaskSender implements  Runnable {
                                 WebElement nomber = tbody.findElement(By.name("nomber-" + Integer.toString(i)));
                                 nomberText = nomber.getAttribute("value");
                             } catch (NoSuchElementException e) {
-                                debugLogger.debug("Selenium didn't find origin number.",e);
+//                                debugLogger.debug("Selenium didn't find origin number.",e);
                             }
 
                             // выбор детали на форме
                             WebElement zapros = tbody.findElement(By.name("zapros-" + Integer.toString(i)));
                             String zaprosText = zapros.getText();
                             if(!zaprosText.isEmpty() && !answeredDetails.contains(zaprosText)) {
-
                                 // поиск заполняемой информации о детали
                                 AutoFillEntity detailEntity = null;
                                 if(nomberText != null && !nomberText.isEmpty() ) {
@@ -123,14 +122,14 @@ public class TaskSender implements  Runnable {
                                             detailEntity = detailEntry.getValue();
                                         }
                                     }
-                                } else if(advertisement.getAutoFillDetailsMap().containsKey(zaprosText)) {
+                                } else  if(advertisement.getAutoFillDetailsMap().keySet().contains(zaprosText.trim())) {
                                     detailEntity = advertisement.getAutoFillDetailsMap().get(zaprosText);
                                 }
 
                                 // заполнение формы детали информацией
                                 if(detailEntity != null) {
 
-                                    // поиск деталей в списке автоответов\
+                                   // поиск деталей в списке автоответов
                                     boolean isAutoAnswerDetail = false;
                                     for(AutoFillEntity autoFillEntity : manager.getAutoFillEntities()) {
                                         if(AutoFillDetector.checkAuto(advertisement, autoFillEntity)) {

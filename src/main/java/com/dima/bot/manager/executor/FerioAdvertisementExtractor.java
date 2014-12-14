@@ -1,6 +1,9 @@
 package com.dima.bot.manager.executor;
 
 import com.dima.bot.manager.model.Advertisement;
+import com.dima.bot.manager.util.ErrorGUIHandler;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,15 +28,17 @@ public class FerioAdvertisementExtractor implements AdvertisementExtractor{
     private static final int MAX_N_PAGE = 10;
     private static final int NOT_CONNECTION_TIME_SLEEP = 1800;
 
+    final Logger logger = LogManager.getLogger("debugLogger");
+
     @Override
     public List<Advertisement> extract(String url) {
 //        url = URLUtil.checkUrl(url);
         List<Advertisement> advertisements = new ArrayList<Advertisement>();
 
         if(url==null) return advertisements;
-        boolean isSuccessDone = true;
-        while(isSuccessDone){
-            isSuccessDone = false;
+        boolean isSuccessDone = false;
+        while(!isSuccessDone){
+            isSuccessDone = true;
             try {
 
                 Document doc = Jsoup.connect(url).get();
@@ -155,14 +160,18 @@ public class FerioAdvertisementExtractor implements AdvertisementExtractor{
 
             }
             catch (SocketTimeoutException e) {
-                isSuccessDone = true;
+                isSuccessDone = false;
                 try {
                     Thread.sleep(NOT_CONNECTION_TIME_SLEEP*1000);
                 } catch (InterruptedException e1) {
+                    SimpleDateFormat dt = new SimpleDateFormat("yyyyy-mm-dd hh:mm:ss");
+                    ErrorGUIHandler.INSTANCE.handleError("NOT_CONNECTION with ferio. In " + dt.format(new Date()) + " Sleeping time " + NOT_CONNECTION_TIME_SLEEP + "sec.");
+                    logger.trace("NOT_CONNECTION with ferio. Sleeping time " + NOT_CONNECTION_TIME_SLEEP + "sec.");
                     e1.printStackTrace();
                 }
             }
             catch (IOException e) {
+                logger.error("Connection error.",e);
                 e.printStackTrace();
             }
         }

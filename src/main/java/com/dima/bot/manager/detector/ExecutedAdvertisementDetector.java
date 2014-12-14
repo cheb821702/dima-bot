@@ -127,6 +127,7 @@ public class ExecutedAdvertisementDetector implements Runnable {
             try {
                 Thread.sleep(manager.getRepeatDetectorSec()*1000);
             } catch (InterruptedException e) {
+                logger.error("Sleep error.",e);
                 e.printStackTrace();
             }
         }

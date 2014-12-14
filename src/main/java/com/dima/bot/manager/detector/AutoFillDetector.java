@@ -64,6 +64,7 @@ public class AutoFillDetector implements Runnable{
             try {
                 Thread.sleep(manager.getRepeatDetectorSec()*1000);
             } catch (InterruptedException e) {
+                logger.error("Sleep error.",e);
                 e.printStackTrace();
             }
         }
@@ -78,7 +79,7 @@ public class AutoFillDetector implements Runnable{
             if(checkAuto(advertisement, autoFillEntity)) {
                 for(Map.Entry<String,String> detail : advertisement.getDetails().entrySet()) {
                     if(checkDetail(detail.getKey().trim(), autoFillEntity.getDetail().trim())) {
-                        detailKey = detail.getKey();
+                        detailKey = detail.getKey().trim();
                         checkedAutoFillEntity = autoFillEntity;
                     }
                 }
@@ -103,9 +104,9 @@ public class AutoFillDetector implements Runnable{
     }
 
     public static boolean checkDetail(String  advertisementDetail, String  autoFillEntityDetail) {
-        if(advertisementDetail != null && advertisementDetail.trim().length() > autoFillEntityDetail.trim().length()) {
-            return false;
-        }
+//        if(advertisementDetail != null && advertisementDetail.trim().length() > autoFillEntityDetail.trim().length()) {
+//            return false;
+//        }
 
         boolean confirmDetail = true;
         advertisementDetail = advertisementDetail.toLowerCase();

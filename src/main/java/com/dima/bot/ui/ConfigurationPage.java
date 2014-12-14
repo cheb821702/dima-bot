@@ -1,6 +1,7 @@
 package com.dima.bot.ui;
 
 import com.dima.bot.manager.BotsManager;
+import com.dima.bot.manager.util.ErrorGUIHandler;
 import com.dima.bot.manager.util.ThreadManager;
 import com.dima.bot.settings.model.UrlWorker;
 import com.dima.bot.ui.component.IntFilter;
@@ -48,9 +49,12 @@ public class ConfigurationPage extends JFrame {
     public ConfigurationPage(BotsManager initManager){
         super("Staff Worker");
 
+        ErrorGUIHandler.INSTANCE.setConfigurationPage(this);
+
         this.manager = initManager;
 
         initTray();
+        initMenu();
 
         try {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -371,6 +375,21 @@ public class ConfigurationPage extends JFrame {
         }, 1000, 1000);
     }
 
+    private void initMenu() {
+        JMenuBar mb = new JMenuBar();
+        JMenu toolMenu = new JMenu("Инструменты");
+        JMenuItem threadsItem = new JMenuItem("Потоки");
+        threadsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ConfigurationPage.this.showMessageDialog(ThreadManager.INSTANCE.getActiveThreadMsg());
+            }
+        });
+        toolMenu.add(threadsItem);
+        mb.add(toolMenu);
+        this.setJMenuBar(mb);
+    }
+
     private void initTray() {
         try{
             logger.debug("setting look and feel");
@@ -439,5 +458,9 @@ public class ConfigurationPage extends JFrame {
             }
         });
         setIconImage(Toolkit.getDefaultToolkit().getImage("trayIcon.png"));
+    }
+
+    public void showMessageDialog(String message) {
+        JOptionPane.showMessageDialog(this,message);
     }
 }
