@@ -39,8 +39,9 @@ public class TaskSender implements  Runnable {
             NewAdvertisement advertisement = manager.getTaskTracker().getLastAutoFillTask(worker);
             boolean isSkippedAdvertisement = true;
             List<String> logSenderList = new LinkedList<String>();
+            debugLogger.debug("TaskSender Mark1");
             if(advertisement == null) {
-                break;
+                isSkippedAdvertisement = false;
             } else {
                 debugLogger.debug("Opening FireFox by " + advertisement.getOpenURL());
                 WebDriver driver = new FirefoxDriver();
@@ -49,6 +50,7 @@ public class TaskSender implements  Runnable {
                 // поиск уже отвеченных деталей
                 List<String> answeredDetails = new ArrayList<String>();
                 try {
+//                    debugLogger.debug("TaskSender Mark2");
                     List<WebElement> trs = driver.findElements(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody/tr"));
                     String answerText = null;
                     for(WebElement child : trs) {
@@ -57,8 +59,9 @@ public class TaskSender implements  Runnable {
                             break;
                         }
                     }
-
+//                    debugLogger.debug("TaskSender Mark3");
                     if(answerText != null) {
+//                        debugLogger.debug("TaskSender Mark4");
                         List<String> zaprosi = new LinkedList<>();
                         String numberstr = null;
                         boolean marker = false;
@@ -78,7 +81,7 @@ public class TaskSender implements  Runnable {
                                 }
                             }
                         }
-
+//                        debugLogger.debug("TaskSender Mark5");
                         for(String zapros : zaprosi) {
                             int pos = answerText.indexOf(zapros);
                             while(pos > 0) {
@@ -90,6 +93,7 @@ public class TaskSender implements  Runnable {
                                 }
                             }
                         }
+//                        debugLogger.debug("TaskSender Mark6");
                     }
                 } catch (NoSuchElementException e) {
                     debugLogger.error("Selenium didn't find answered element.",e);
@@ -98,7 +102,7 @@ public class TaskSender implements  Runnable {
                 // заполнеие формы запроса
                 try {
                     WebElement tbody = driver.findElement(By.xpath("//form[@action='/otvet-php/add.php']/small/table/tbody/tr/td/table/tbody"));
-
+//                    debugLogger.debug("TaskSender Mark7");
                     for(int i = 1; i < 100; i++) {
                         try {
                             // поиск ориг. номера детали
@@ -193,6 +197,7 @@ public class TaskSender implements  Runnable {
                               break;
                         }
                     }
+//                    debugLogger.debug("TaskSender Mark8");
                     if(!isSkippedAdvertisement) {
                         driver.findElement(By.name("submit")).click();
                         for(String log : logSenderList) {
@@ -206,7 +211,7 @@ public class TaskSender implements  Runnable {
                 manager.getTaskTracker().removeAutoFillTask(worker,advertisement);
                 driver.close();
             }
-
+//            debugLogger.debug("TaskSender Mark9");
             if(!isSkippedAdvertisement) {
                 manager.putTimerLastAnswerDate(this.worker,new Date());
                 // выставление задержки
@@ -227,7 +232,9 @@ public class TaskSender implements  Runnable {
                     debugLogger.error(e.getMessage(),e);
                 }
             }
+            debugLogger.debug("TaskSender Mark10");
         }
+        debugLogger.debug("TaskSender Mark11");
     }
 
     public TaskSender(UrlWorker worker, BotsManager manager) {
