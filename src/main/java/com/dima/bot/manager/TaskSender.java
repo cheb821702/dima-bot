@@ -203,6 +203,7 @@ public class TaskSender implements  Runnable {
                         for(String log : logSenderList) {
                             logger.info(log);
                         }
+                        manager.putTimerLastAnswerDate(this.worker,new Date());
                     }
                 } catch (NoSuchElementException e) {
                     debugLogger.error("Selenium didn't find element.Form filling.",e);
@@ -213,7 +214,6 @@ public class TaskSender implements  Runnable {
             }
 //            debugLogger.debug("TaskSender Mark9");
             if(!isSkippedAdvertisement) {
-                manager.putTimerLastAnswerDate(this.worker,new Date());
                 // выставление задержки
                 int minSec = worker.getMinSecTime();
                 int maxSec = worker.getMaxSecTime();
